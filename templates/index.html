@@ -315,7 +315,7 @@ $(document).ready(function() {
         e.preventDefault();
         const roomType = $('#roomType').val();
         if (roomType) {
-            window.location.href = "{{ url_for('book_room', room_type_id='') }}" + roomType;
+            window.location.href = "{{ url_for('book_room', room_type_id=1) }}".replace('1', roomType);
         } else {
             window.location.href = "{{ url_for('rooms') }}";
         }
