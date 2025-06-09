@@ -474,6 +474,29 @@ def room_calendar(room_type_id):
     
     return render_template('room_calendar.html', room_type=room_type, calendar_data=calendar_data)
 
+@app.route('/create-admin-user')
+def create_admin_user():
+    # Check if admin already exists
+    admin_user = User.query.filter_by(username='admin').first()
+    if admin_user:
+        return "Admin user already exists"
+    
+    # Create admin user
+    admin = User(
+        username='admin',
+        email='admin@luxuryresort.com',
+        first_name='Resort',
+        last_name='Administrator',
+        phone='+1-555-0123'
+    )
+    admin.is_admin = True
+    admin.set_password('admin123')  # Change this password after first login
+    
+    db.session.add(admin)
+    db.session.commit()
+    
+    return "Admin user created successfully! Username: admin, Password: admin123"
+
 # Error handlers
 @app.errorhandler(404)
 def not_found_error(error):
