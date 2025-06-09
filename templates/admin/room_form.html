@@ -1,0 +1,77 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ title }} - Admin{% endblock %}
+
+{% block admin_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-lg">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">{{ title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.room_number.label(class="form-label") }}
+                                {{ form.room_number(class="form-control") }}
+                                {% if form.room_number.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.room_number.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.floor.label(class="form-label") }}
+                                {{ form.floor(class="form-control") }}
+                                {% if form.floor.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.floor.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.room_type_id.label(class="form-label") }}
+                        {{ form.room_type_id(class="form-control") }}
+                        {% if form.room_type_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.room_type_id.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.is_available(class="form-check-input") }}
+                            {{ form.is_available.label(class="form-check-label") }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin_rooms') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Rooms
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Room
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

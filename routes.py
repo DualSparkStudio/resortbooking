@@ -300,6 +300,180 @@ def admin_users():
     users = User.query.order_by(User.created_at.desc()).all()
     return render_template('admin/users.html', users=users)
 
+@app.route('/admin/room-types')
+@login_required
+def admin_room_types():
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('index'))
+    
+    room_types = RoomType.query.all()
+    return render_template('admin/room_types.html', room_types=room_types)
+
+@app.route('/admin/room-types/add', methods=['GET', 'POST'])
+@login_required
+def admin_add_room_type():
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('index'))
+    
+    form = RoomTypeForm()
+    if form.validate_on_submit():
+        room_type = RoomType(
+            name=form.name.data,
+            description=form.description.data,
+            price_per_night=form.price_per_night.data,
+            max_occupancy=form.max_occupancy.data,
+            amenities=form.amenities.data,
+            image_url=form.image_url.data,
+            is_active=form.is_active.data
+        )
+        db.session.add(room_type)
+        db.session.commit()
+        flash('Room type added successfully!', 'success')
+        return redirect(url_for('admin_room_types'))
+    
+    return render_template('admin/room_type_form.html', form=form, title='Add Room Type')
+
+@app.route('/admin/room-types/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def admin_edit_room_type(id):
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('index'))
+    
+    room_type = RoomType.query.get_or_404(id)
+    form = RoomTypeForm(obj=room_type)
+    
+    if form.validate_on_submit():
+        form.populate_obj(room_type)
+        db.session.commit()
+        flash('Room type updated successfully!', 'success')
+        return redirect(url_for('admin_room_types'))
+    
+    return render_template('admin/room_type_form.html', form=form, room_type=room_type, title='Edit Room Type')
+
+@app.route('/admin/rooms/add', methods=['GET', 'POST'])
+@login_required
+def admin_add_room():
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('index'))
+    
+    form = RoomForm()
+    if form.validate_on_submit():
+        room = Room(
+            room_number=form.room_number.data,
+            room_type_id=form.room_type_id.data,
+            floor=form.floor.data,
+            is_available=form.is_available.data
+        )
+        db.session.add(room)
+        db.session.commit()
+        flash('Room added successfully!', 'success')
+        return redirect(url_for('admin_rooms'))
+    
+    return render_template('admin/room_form.html', form=form, title='Add Room')
+
+@app.route('/admin/rooms/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def admin_edit_room(id):
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('index'))
+    
+    room = Room.query.get_or_404(id)
+    form = RoomForm(obj=room)
+    
+    if form.validate_on_submit():
+        form.populate_obj(room)
+        db.session.commit()
+        flash('Room updated successfully!', 'success')
+        return redirect(url_for('admin_rooms'))
+    
+    return render_template('admin/room_form.html', form=form, room=room, title='Edit Room')
+
+@app.route('/admin/facilities')
+@login_required
+def admin_facilities():
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('index'))
+    
+    facilities = Facility.query.all()
+    return render_template('admin/facilities.html', facilities=facilities)
+
+@app.route('/admin/facilities/add', methods=['GET', 'POST'])
+@login_required
+def admin_add_facility():
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('index'))
+    
+    form = FacilityForm()
+    if form.validate_on_submit():
+        facility = Facility(
+            name=form.name.data,
+            description=form.description.data,
+            icon=form.icon.data,
+            is_active=form.is_active.data
+        )
+        db.session.add(facility)
+        db.session.commit()
+        flash('Facility added successfully!', 'success')
+        return redirect(url_for('admin_facilities'))
+    
+    return render_template('admin/facility_form.html', form=form, title='Add Facility')
+
+@app.route('/admin/facilities/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def admin_edit_facility(id):
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('index'))
+    
+    facility = Facility.query.get_or_404(id)
+    form = FacilityForm(obj=facility)
+    
+    if form.validate_on_submit():
+        form.populate_obj(facility)
+        db.session.commit()
+        flash('Facility updated successfully!', 'success')
+        return redirect(url_for('admin_facilities'))
+    
+    return render_template('admin/facility_form.html', form=form, facility=facility, title='Edit Facility')
+
+@app.route('/room-calendar/<int:room_type_id>')
+def room_calendar(room_type_id):
+    room_type = RoomType.query.get_or_404(room_type_id)
+    
+    # Get all bookings for this room type in the next 3 months
+    from datetime import datetime, timedelta
+    start_date = datetime.now().date()
+    end_date = start_date + timedelta(days=90)
+    
+    bookings = db.session.query(Booking).join(Room).filter(
+        Room.room_type_id == room_type_id,
+        Booking.check_in_date <= end_date,
+        Booking.check_out_date >= start_date,
+        Booking.booking_status.in_(['confirmed', 'pending'])
+    ).all()
+    
+    # Convert bookings to calendar format
+    calendar_data = []
+    for booking in bookings:
+        calendar_data.append({
+            'title': f'Room {booking.room.room_number} - {booking.user.get_full_name()}',
+            'start': booking.check_in_date.isoformat(),
+            'end': booking.check_out_date.isoformat(),
+            'color': '#38a169' if booking.booking_status == 'confirmed' else '#ed8936',
+            'room_number': booking.room.room_number,
+            'guest_name': booking.user.get_full_name(),
+            'status': booking.booking_status
+        })
+    
+    return render_template('room_calendar.html', room_type=room_type, calendar_data=calendar_data)
+
 # Error handlers
 @app.errorhandler(404)
 def not_found_error(error):

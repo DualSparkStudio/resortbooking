@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}{{ room_type.name }} - Room Calendar{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+<style>
+.calendar-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: var(--luxury-shadow);
+    padding: 30px;
+    margin: 20px 0;
+}
+
+.calendar-header {
+    background: var(--luxury-gradient);
+    color: white;
+    padding: 20px;
+    border-radius: 15px 15px 0 0;
+    margin: -30px -30px 30px -30px;
+}
+
+.room-info-card {
+    background: var(--luxury-light);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--luxury-accent);
+}
+
+.legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.fc-event {
+    border: none !important;
+    border-radius: 5px !important;
+}
+
+.fc-daygrid-event {
+    border-radius: 3px !important;
+    margin: 1px !important;
+}
+
+.availability-summary {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-4">
+                <h1 class="luxury-title">{{ room_type.name }} Availability Calendar</h1>
+                <p class="lead text-muted">View room occupancy and booking status</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="room-info-card">
+                <h4 class="luxury-title mb-3">Room Information</h4>
+                {% if room_type.image_url %}
+                    <img src="{{ room_type.image_url }}" alt="{{ room_type.name }}" 
+                         class="img-fluid rounded mb-3" style="height: 200px; object-fit: cover; width: 100%;">
+                {% endif %}
+                <p><strong>Price per night:</strong> <span class="text-success">${{ "%.2f"|format(room_type.price_per_night) }}</span></p>
+                <p><strong>Max occupancy:</strong> {{ room_type.max_occupancy }} guests</p>
+                <p><strong>Description:</strong></p>
+                <p class="text-muted">{{ room_type.description }}</p>
+                
+                <div class="mt-4">
+                    <a href="{{ url_for('book_room', room_type_id=room_type.id) }}" 
+                       class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-calendar-plus me-2"></i>Book This Room
+                    </a>
+                    <a href="{{ url_for('room_detail', room_type_id=room_type.id) }}" 
+                       class="btn btn-outline-primary w-100">
+                        <i class="fas fa-info-circle me-2"></i>Room Details
+                    </a>
+                </div>
+            </div>
+
+            <div class="availability-summary">
+                <h5 class="mb-3">Legend</h5>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #38a169;"></div>
+                        <span>Confirmed Booking</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #ed8936;"></div>
+                        <span>Pending Booking</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f7fafc;"></div>
+                        <span>Available</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Room Availability Calendar
+                    </h3>
+                    <p class="mb-0 opacity-75">Click on any date to check availability or make a booking</p>
+                </div>
+                
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,listMonth'
+        },
+        height: 'auto',
+        events: {{ calendar_data | tojson }},
+        eventClick: function(info) {
+            // Show booking details
+            alert(
+                'Room: ' + info.event.extendedProps.room_number + '\n' +
+                'Guest: ' + info.event.extendedProps.guest_name + '\n' +
+                'Status: ' + info.event.extendedProps.status + '\n' +
+                'Check-in: ' + info.event.start.toDateString() + '\n' +
+                'Check-out: ' + info.event.end.toDateString()
+            );
+        },
+        dateClick: function(info) {
+            // Redirect to booking page with selected date
+            var selectedDate = info.dateStr;
+            var bookingUrl = "{{ url_for('book_room', room_type_id=room_type.id) }}";
+            bookingUrl += '?check_in=' + selectedDate;
+            window.location.href = bookingUrl;
+        },
+        eventDidMount: function(info) {
+            // Add tooltip
+            info.el.setAttribute('title', 
+                'Room ' + info.event.extendedProps.room_number + ' - ' + 
+                info.event.extendedProps.guest_name + ' (' + 
+                info.event.extendedProps.status + ')'
+            );
+        },
+        dayMaxEvents: 3,
+        moreLinkClick: 'popover',
+        eventDisplay: 'block',
+        displayEventTime: false,
+        eventTextColor: '#ffffff',
+        eventBorderColor: 'transparent'
+    });
+    
+    calendar.render();
+    
+    // Add click handlers for available dates
+    calendar.on('dateClick', function(info) {
+        var clickedDate = new Date(info.date);
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (clickedDate >= today) {
+            var confirmBooking = confirm(
+                'Would you like to start a booking for ' + 
+                clickedDate.toDateString() + '?'
+            );
+            
+            if (confirmBooking) {
+                var bookingUrl = "{{ url_for('book_room', room_type_id=room_type.id) }}";
+                bookingUrl += '?check_in=' + info.dateStr;
+                window.location.href = bookingUrl;
+            }
+        } else {
+            alert('Cannot book dates in the past.');
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -67,9 +67,17 @@
                            href="{{ url_for('admin_bookings') }}">
                             <i class="fas fa-calendar-alt me-2"></i>Bookings
                         </a>
-                        <a class="nav-link admin-nav-link {% if request.endpoint == 'admin_rooms' %}active{% endif %}" 
+                        <a class="nav-link admin-nav-link {% if request.endpoint in ['admin_rooms', 'admin_add_room', 'admin_edit_room'] %}active{% endif %}" 
                            href="{{ url_for('admin_rooms') }}">
                             <i class="fas fa-bed me-2"></i>Rooms
+                        </a>
+                        <a class="nav-link admin-nav-link {% if request.endpoint in ['admin_room_types', 'admin_add_room_type', 'admin_edit_room_type'] %}active{% endif %}" 
+                           href="{{ url_for('admin_room_types') }}">
+                            <i class="fas fa-hotel me-2"></i>Room Types
+                        </a>
+                        <a class="nav-link admin-nav-link {% if request.endpoint in ['admin_facilities', 'admin_add_facility', 'admin_edit_facility'] %}active{% endif %}" 
+                           href="{{ url_for('admin_facilities') }}">
+                            <i class="fas fa-swimming-pool me-2"></i>Facilities
                         </a>
                         <a class="nav-link admin-nav-link {% if request.endpoint == 'admin_users' %}active{% endif %}" 
                            href="{{ url_for('admin_users') }}">
