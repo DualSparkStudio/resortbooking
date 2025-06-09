@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Luxury Resort{% endblock %}
+
+{% block content %}
+<section class="auth-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-header bg-luxury text-white text-center py-4">
+                        <h3 class="mb-0"><i class="fas fa-user-plus me-2"></i>Create Account</h3>
+                        <p class="mb-0 mt-2 opacity-75">Join our luxury community</p>
+                    </div>
+                    <div class="card-body p-5">
+                        <form method="POST">
+                            {{ form.hidden_tag() }}
+                            
+                            <!-- Personal Information -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="{{ form.first_name.id }}" class="form-label">
+                                        <i class="fas fa-user me-2 luxury-accent"></i>First Name
+                                    </label>
+                                    {{ form.first_name(class="form-control form-control-lg", placeholder="John") }}
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.first_name.errors %}
+                                                <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.last_name.id }}" class="form-label">
+                                        <i class="fas fa-user me-2 luxury-accent"></i>Last Name
+                                    </label>
+                                    {{ form.last_name(class="form-control form-control-lg", placeholder="Doe") }}
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.last_name.errors %}
+                                                <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Account Information -->
+                            <div class="mb-3">
+                                <label for="{{ form.username.id }}" class="form-label">
+                                    <i class="fas fa-at me-2 luxury-accent"></i>Username
+                                </label>
+                                {{ form.username(class="form-control form-control-lg", placeholder="Choose a unique username") }}
+                                {% if form.username.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.username.errors %}
+                                            <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.email.id }}" class="form-label">
+                                    <i class="fas fa-envelope me-2 luxury-accent"></i>Email Address
+                                </label>
+                                {{ form.email(class="form-control form-control-lg", placeholder="john@example.com") }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.email.errors %}
+                                            <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.phone.id }}" class="form-label">
+                                    <i class="fas fa-phone me-2 luxury-accent"></i>Phone Number <small class="text-muted">(Optional)</small>
+                                </label>
+                                {{ form.phone(class="form-control form-control-lg", placeholder="+1 (555) 123-4567") }}
+                                {% if form.phone.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.phone.errors %}
+                                            <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Password -->
+                            <div class="mb-3">
+                                <label for="{{ form.password.id }}" class="form-label">
+                                    <i class="fas fa-lock me-2 luxury-accent"></i>Password
+                                </label>
+                                <div class="input-group">
+                                    {{ form.password(class="form-control form-control-lg", placeholder="Create a strong password") }}
+                                    <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="password-strength mt-2">
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar" id="passwordStrength" style="width: 0%;"></div>
+                                    </div>
+                                    <small class="text-muted" id="passwordHelp">Password must be at least 6 characters</small>
+                                </div>
+                                {% if form.password.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.password.errors %}
+                                            <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="{{ form.password2.id }}" class="form-label">
+                                    <i class="fas fa-lock me-2 luxury-accent"></i>Confirm Password
+                                </label>
+                                {{ form.password2(class="form-control form-control-lg", placeholder="Confirm your password") }}
+                                {% if form.password2.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.password2.errors %}
+                                            <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Terms and Conditions -->
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                                    <label class="form-check-label" for="agreeTerms">
+                                        I agree to the <a href="#" class="luxury-link">Terms of Service</a> and <a href="#" class="luxury-link">Privacy Policy</a>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid mb-4">
+                                <button type="submit" class="btn btn-luxury btn-lg">
+                                    <i class="fas fa-user-plus me-2"></i>Create Account
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center">
+                            <p class="text-muted mb-0">
+                                Already have an account? 
+                                <a href="{{ url_for('login') }}" class="luxury-link fw-bold">Sign in here</a>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent text-center py-3">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Your information is secure and protected
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Member Benefits -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h6 class="text-center mb-3">Member Benefits</h6>
+                        <div class="row text-center">
+                            <div class="col-md-3 col-6 mb-3">
+                                <i class="fas fa-percentage fa-2x luxury-accent mb-2"></i>
+                                <p class="small text-muted mb-0">Exclusive Discounts</p>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <i class="fas fa-clock fa-2x luxury-accent mb-2"></i>
+                                <p class="small text-muted mb-0">Priority Booking</p>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <i class="fas fa-gift fa-2x luxury-accent mb-2"></i>
+                                <p class="small text-muted mb-0">Special Offers</p>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <i class="fas fa-concierge-bell fa-2x luxury-accent mb-2"></i>
+                                <p class="small text-muted mb-0">VIP Service</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function() {
+    // Toggle password visibility
+    $('#togglePassword').click(function() {
+        const passwordField = $('#{{ form.password.id }}');
+        const icon = $(this).find('i');
+        
+        if (passwordField.attr('type') === 'password') {
+            passwordField.attr('type', 'text');
+            icon.removeClass('fa-eye').addClass('fa-eye-slash');
+        } else {
+            passwordField.attr('type', 'password');
+            icon.removeClass('fa-eye-slash').addClass('fa-eye');
+        }
+    });
+    
+    // Password strength indicator
+    $('#{{ form.password.id }}').on('input', function() {
+        const password = $(this).val();
+        const strength = calculatePasswordStrength(password);
+        const progressBar = $('#passwordStrength');
+        const helpText = $('#passwordHelp');
+        
+        progressBar.css('width', strength.percentage + '%');
+        progressBar.removeClass('bg-danger bg-warning bg-success').addClass(strength.class);
+        helpText.text(strength.text);
+    });
+    
+    function calculatePasswordStrength(password) {
+        let score = 0;
+        let feedback = [];
+        
+        if (password.length >= 6) score += 20;
+        if (password.length >= 8) score += 10;
+        if (/[a-z]/.test(password)) score += 15;
+        if (/[A-Z]/.test(password)) score += 15;
+        if (/\d/.test(password)) score += 20;
+        if (/[^a-zA-Z0-9]/.test(password)) score += 20;
+        
+        if (score < 40) {
+            return { percentage: score, class: 'bg-danger', text: 'Weak password' };
+        } else if (score < 70) {
+            return { percentage: score, class: 'bg-warning', text: 'Medium strength' };
+        } else {
+            return { percentage: score, class: 'bg-success', text: 'Strong password' };
+        }
+    }
+    
+    // Form validation
+    $('form').submit(function(e) {
+        const password = $('#{{ form.password.id }}').val();
+        const confirmPassword = $('#{{ form.password2.id }}').val();
+        const termsChecked = $('#agreeTerms').is(':checked');
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match.');
+            return false;
+        }
+        
+        if (!termsChecked) {
+            e.preventDefault();
+            alert('Please accept the terms and conditions.');
+            return false;
+        }
+        
+        // Show loading state
+        $(this).find('button[type="submit"]').html('<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...').prop('disabled', true);
+    });
+});
+</script>
+{% endblock %}

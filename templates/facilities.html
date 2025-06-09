@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}World-Class Facilities - Luxury Resort{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="row justify-content-center text-center text-white">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">World-Class Facilities</h1>
+                <p class="lead">Experience luxury amenities designed for your ultimate comfort and enjoyment</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Facilities Grid -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            {% for facility in facilities %}
+            <div class="col-lg-4 col-md-6 mb-5">
+                <div class="card h-100 border-0 shadow-lg facility-card">
+                    <div class="card-body text-center p-4">
+                        <div class="facility-icon-large mb-4">
+                            <i class="{{ facility.icon or 'fas fa-star' }} fa-3x luxury-accent"></i>
+                        </div>
+                        <h4 class="card-title mb-3">{{ facility.name }}</h4>
+                        <p class="card-text text-muted">{{ facility.description }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if not facilities %}
+        <div class="row">
+            <div class="col-12 text-center">
+                <div class="py-5">
+                    <i class="fas fa-spa fa-4x text-muted mb-4"></i>
+                    <h3 class="text-muted">Facilities information coming soon</h3>
+                    <p class="lead text-muted">We're updating our facilities information. Please contact us for details.</p>
+                    <a href="{{ url_for('contact') }}" class="btn btn-primary">Contact Us</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Featured Facilities -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="luxury-title">Signature Experiences</h2>
+            <p class="lead text-muted">Discover our most popular amenities and services</p>
+        </div>
+        
+        <div class="row">
+            <!-- Spa & Wellness -->
+            <div class="col-lg-6 mb-5">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <img src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="Luxury Spa" class="img-fluid rounded-4 shadow">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-4">
+                            <h4 class="luxury-title mb-3">
+                                <i class="fas fa-spa me-2 luxury-accent"></i>Luxury Spa & Wellness
+                            </h4>
+                            <p class="text-muted mb-3">
+                                Rejuvenate your body and soul at our world-class spa featuring traditional and 
+                                modern treatments, steam rooms, saunas, and relaxation pools.
+                            </p>
+                            <ul class="list-unstyled text-muted">
+                                <li><i class="fas fa-check text-success me-2"></i>Signature massage treatments</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Couples' spa suites</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Aromatherapy sessions</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Wellness consultations</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Fine Dining -->
+            <div class="col-lg-6 mb-5">
+                <div class="row align-items-center">
+                    <div class="col-md-6 order-md-2">
+                        <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="Fine Dining" class="img-fluid rounded-4 shadow">
+                    </div>
+                    <div class="col-md-6 order-md-1">
+                        <div class="p-4">
+                            <h4 class="luxury-title mb-3">
+                                <i class="fas fa-utensils me-2 luxury-accent"></i>Fine Dining
+                            </h4>
+                            <p class="text-muted mb-3">
+                                Savor exquisite cuisine at our award-winning restaurants featuring international 
+                                flavors, local specialties, and innovative culinary creations.
+                            </p>
+                            <ul class="list-unstyled text-muted">
+                                <li><i class="fas fa-check text-success me-2"></i>Multiple cuisine options</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Ocean-view dining</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Private dining rooms</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Wine cellar & sommelier</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Water Sports -->
+            <div class="col-lg-6 mb-5">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="Water Sports" class="img-fluid rounded-4 shadow">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-4">
+                            <h4 class="luxury-title mb-3">
+                                <i class="fas fa-swimmer me-2 luxury-accent"></i>Water Sports & Recreation
+                            </h4>
+                            <p class="text-muted mb-3">
+                                Dive into adventure with our comprehensive water sports program featuring 
+                                everything from snorkeling to deep-sea fishing expeditions.
+                            </p>
+                            <ul class="list-unstyled text-muted">
+                                <li><i class="fas fa-check text-success me-2"></i>Snorkeling & diving</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Kayaking & paddleboarding</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Deep-sea fishing</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Sailing & boat tours</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Fitness & Pool -->
+            <div class="col-lg-6 mb-5">
+                <div class="row align-items-center">
+                    <div class="col-md-6 order-md-2">
+                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="Pool & Fitness" class="img-fluid rounded-4 shadow">
+                    </div>
+                    <div class="col-md-6 order-md-1">
+                        <div class="p-4">
+                            <h4 class="luxury-title mb-3">
+                                <i class="fas fa-dumbbell me-2 luxury-accent"></i>Fitness & Pools
+                            </h4>
+                            <p class="text-muted mb-3">
+                                Stay active with our state-of-the-art fitness center and multiple swimming 
+                                pools designed for relaxation and recreation.
+                            </p>
+                            <ul class="list-unstyled text-muted">
+                                <li><i class="fas fa-check text-success me-2"></i>24/7 fitness center</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Infinity pool with ocean view</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Adults-only quiet pool</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Personal training available</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Facility Categories -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="luxury-title">Complete Amenity Guide</h2>
+            <p class="lead text-muted">Everything you need for the perfect vacation</p>
+        </div>
+        
+        <div class="row">
+            <!-- Recreation -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-volleyball-ball fa-2x luxury-accent mb-3"></i>
+                        <h6 class="mb-3">Recreation</h6>
+                        <ul class="list-unstyled text-muted small">
+                            <li>Tennis court</li>
+                            <li>Beach volleyball</li>
+                            <li>Mini golf</li>
+                            <li>Game room</li>
+                            <li>Library</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Business -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-briefcase fa-2x luxury-accent mb-3"></i>
+                        <h6 class="mb-3">Business</h6>
+                        <ul class="list-unstyled text-muted small">
+                            <li>Conference rooms</li>
+                            <li>Business center</li>
+                            <li>High-speed WiFi</li>
+                            <li>Meeting facilities</li>
+                            <li>Event planning</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Family -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-child fa-2x luxury-accent mb-3"></i>
+                        <h6 class="mb-3">Family</h6>
+                        <ul class="list-unstyled text-muted small">
+                            <li>Kids' club</li>
+                            <li>Children's pool</li>
+                            <li>Playground</li>
+                            <li>Family activities</li>
+                            <li>Babysitting service</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Services -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-concierge-bell fa-2x luxury-accent mb-3"></i>
+                        <h6 class="mb-3">Services</h6>
+                        <ul class="list-unstyled text-muted small">
+                            <li>24/7 concierge</li>
+                            <li>Laundry service</li>
+                            <li>Room service</li>
+                            <li>Transportation</li>
+                            <li>Tour booking</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 cta-section">
+    <div class="container">
+        <div class="row justify-content-center text-center text-white">
+            <div class="col-lg-8">
+                <h2 class="display-5 fw-bold mb-4">Experience All We Have to Offer</h2>
+                <p class="lead mb-5">Book your stay today and enjoy unlimited access to our world-class facilities and services.</p>
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                    <a href="{{ url_for('rooms') }}" class="btn btn-light btn-lg px-5">
+                        <i class="fas fa-bed me-2"></i>Book Your Stay
+                    </a>
+                    <a href="{{ url_for('contact') }}" class="btn btn-outline-light btn-lg px-5">
+                        <i class="fas fa-info-circle me-2"></i>Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

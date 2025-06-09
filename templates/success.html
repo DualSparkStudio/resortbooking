@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Success - Luxury Resort{% endblock %}
+
+{% block content %}
+<!-- Success Header -->
+<section class="success-header py-5 bg-success text-white">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <div class="success-icon mb-4">
+                    <i class="fas fa-check-circle fa-4x"></i>
+                </div>
+                <h1 class="display-4 fw-bold mb-3">Success!</h1>
+                <p class="lead">Your action has been completed successfully.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Success Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5 text-center">
+                        <h4 class="mb-4">What's Next?</h4>
+                        <p class="text-muted mb-4">
+                            Thank you for using our service. We appreciate your business and look forward to serving you again.
+                        </p>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-4 mb-3">
+                                <div class="next-step-item">
+                                    <i class="fas fa-home fa-2x luxury-accent mb-3"></i>
+                                    <h6>Return Home</h6>
+                                    <p class="text-muted small">Go back to our homepage</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="next-step-item">
+                                    <i class="fas fa-bed fa-2x luxury-accent mb-3"></i>
+                                    <h6>Browse Rooms</h6>
+                                    <p class="text-muted small">Explore our accommodations</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="next-step-item">
+                                    <i class="fas fa-phone fa-2x luxury-accent mb-3"></i>
+                                    <h6>Contact Us</h6>
+                                    <p class="text-muted small">Get in touch with our team</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                            <a href="{{ url_for('index') }}" class="btn btn-luxury btn-lg px-4">
+                                <i class="fas fa-home me-2"></i>Return Home
+                            </a>
+                            {% if current_user.is_authenticated %}
+                                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary btn-lg px-4">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('rooms') }}" class="btn btn-outline-primary btn-lg px-4">
+                                    <i class="fas fa-bed me-2"></i>Browse Rooms
+                                </a>
+                            {% endif %}
+                            <a href="{{ url_for('contact') }}" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="fas fa-phone me-2"></i>Contact Us
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h6 class="mb-3"><i class="fas fa-info-circle me-2 luxury-accent"></i>Important Information</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="info-item">
+                                    <h6 class="mb-2">Confirmation Details</h6>
+                                    <p class="text-muted small mb-0">
+                                        If you made a booking or payment, you should receive a confirmation email shortly. 
+                                        Please check your inbox and spam folder.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="info-item">
+                                    <h6 class="mb-2">Need Help?</h6>
+                                    <p class="text-muted small mb-0">
+                                        If you have any questions or concerns, our customer service team is available 
+                                        24/7 to assist you. Contact us anytime.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <h2 class="luxury-title mb-4">Discover More</h2>
+                <p class="lead text-muted mb-5">Explore everything our luxury resort has to offer</p>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="feature-card text-center">
+                            <i class="fas fa-spa fa-3x luxury-accent mb-3"></i>
+                            <h5>Spa & Wellness</h5>
+                            <p class="text-muted">Rejuvenate with our world-class spa treatments</p>
+                            <a href="{{ url_for('facilities') }}" class="btn btn-outline-primary">Learn More</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="feature-card text-center">
+                            <i class="fas fa-utensils fa-3x luxury-accent mb-3"></i>
+                            <h5>Fine Dining</h5>
+                            <p class="text-muted">Experience culinary excellence at our restaurants</p>
+                            <a href="{{ url_for('facilities') }}" class="btn btn-outline-primary">Learn More</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="feature-card text-center">
+                            <i class="fas fa-swimmer fa-3x luxury-accent mb-3"></i>
+                            <h5>Recreation</h5>
+                            <p class="text-muted">Enjoy activities and entertainment for all ages</p>
+                            <a href="{{ url_for('facilities') }}" class="btn btn-outline-primary">Learn More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function() {
+    // Auto-scroll to content after page load
+    setTimeout(function() {
+        $('html, body').animate({
+            scrollTop: $('.success-header').offset().top
+        }, 1000);
+    }, 500);
+    
+    // Add some celebration animation
+    setTimeout(function() {
+        $('.success-icon i').addClass('animate__animated animate__pulse');
+    }, 1000);
+});
+</script>
+{% endblock %}

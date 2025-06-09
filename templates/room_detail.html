@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}{{ room_type.name }} - Luxury Resort{% endblock %}
+
+{% block content %}
+<!-- Room Hero Section -->
+<section class="room-hero" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('{{ room_type.image_url or 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80' }}') center/cover;">
+    <div class="container">
+        <div class="row justify-content-center text-center text-white">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">{{ room_type.name }}</h1>
+                <p class="lead mb-4">{{ room_type.description }}</p>
+                <div class="room-price-hero">
+                    <span class="price-amount">{{ format_currency(room_type.price_per_night) }}</span>
+                    <span class="price-period"> per night</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Room Details -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Room Information -->
+            <div class="col-lg-8 mb-5">
+                <!-- Room Features -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0 py-3">
+                        <h4 class="mb-0"><i class="fas fa-star me-2 luxury-accent"></i>Room Features</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="feature-item">
+                                    <i class="fas fa-users me-2 luxury-accent"></i>
+                                    <strong>Maximum Occupancy:</strong> {{ room_type.max_occupancy }} guests
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="feature-item">
+                                    <i class="fas fa-bed me-2 luxury-accent"></i>
+                                    <strong>Bed Type:</strong> King or Twin beds available
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="feature-item">
+                                    <i class="fas fa-ruler me-2 luxury-accent"></i>
+                                    <strong>Room Size:</strong> 45-65 sqm
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="feature-item">
+                                    <i class="fas fa-eye me-2 luxury-accent"></i>
+                                    <strong>View:</strong> Ocean or Garden view
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room Description -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0 py-3">
+                        <h4 class="mb-0"><i class="fas fa-info-circle me-2 luxury-accent"></i>About This Room</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">{{ room_type.description }}</p>
+                        <p class="text-muted">
+                            Our {{ room_type.name }} offers the perfect blend of luxury and comfort. Each room is 
+                            thoughtfully designed with premium furnishings, modern amenities, and stunning views. 
+                            Whether you're here for business or leisure, you'll find everything you need for a 
+                            memorable stay.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Amenities -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0 py-3">
+                        <h4 class="mb-0"><i class="fas fa-concierge-bell me-2 luxury-accent"></i>Room Amenities</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Standard Amenities -->
+                            <div class="col-lg-6">
+                                <h6 class="mb-3">Comfort & Technology</h6>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>High-speed WiFi</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>65" Smart TV</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Climate control</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Premium sound system</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Work desk & chair</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>In-room safe</li>
+                                </ul>
+                            </div>
+                            <div class="col-lg-6">
+                                <h6 class="mb-3">Bathroom & Services</h6>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Marble bathroom</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Rain shower</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Premium toiletries</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>24/7 room service</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Daily housekeeping</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Mini bar</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        {% if room_type.amenities %}
+                        <hr class="my-4">
+                        <h6 class="mb-3">Special Features</h6>
+                        <div class="row">
+                            {% for amenity in room_type.amenities.split('\n') if amenity.strip() %}
+                            <div class="col-md-6 mb-2">
+                                <i class="fas fa-star text-warning me-2"></i>{{ amenity.strip() }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Sidebar -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-lg booking-card sticky-top">
+                    <div class="card-header bg-luxury text-white text-center py-4">
+                        <h5 class="mb-1">Book This Room</h5>
+                        <div class="room-price-large">
+                            {{ format_currency(room_type.price_per_night) }}
+                            <span class="price-period-small"> / night</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="quickBookingForm">
+                            <div class="mb-3">
+                                <label for="checkIn" class="form-label">Check-in Date</label>
+                                <input type="date" class="form-control" id="checkIn" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="checkOut" class="form-label">Check-out Date</label>
+                                <input type="date" class="form-control" id="checkOut" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="guests" class="form-label">Number of Guests</label>
+                                <select class="form-select" id="guests" required>
+                                    {% for i in range(1, room_type.max_occupancy + 1) %}
+                                    <option value="{{ i }}" {% if i == 2 %}selected{% endif %}>
+                                        {{ i }} Guest{{ 's' if i > 1 else '' }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Price Calculation -->
+                            <div class="pricing-summary p-3 bg-light rounded mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Rate per night:</span>
+                                    <span>{{ format_currency(room_type.price_per_night) }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span id="nightsText">Number of nights:</span>
+                                    <span id="nightsCount">-</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between fw-bold">
+                                    <span>Total:</span>
+                                    <span id="totalPrice">-</span>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-luxury w-100 mb-3">
+                                <i class="fas fa-calendar-check me-2"></i>Book Now
+                            </button>
+                        </form>
+                        
+                        <div class="text-center">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Free cancellation up to 24 hours before check-in
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body text-center p-4">
+                        <h6 class="mb-3">Need Help Booking?</h6>
+                        <p class="text-muted small mb-3">Our reservation specialists are available 24/7</p>
+                        <a href="{{ url_for('contact') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-phone me-2"></i>Contact Us
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Similar Rooms -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="luxury-title">You Might Also Like</h2>
+            <p class="lead text-muted">Explore our other luxury accommodations</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
+                         class="card-img-top" alt="Deluxe Suite" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h6 class="card-title">Deluxe Ocean Suite</h6>
+                        <p class="text-muted small">Spacious suite with panoramic ocean views</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">$450/night</span>
+                            <a href="#" class="btn btn-sm btn-outline-primary">View</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
+                         class="card-img-top" alt="Garden Villa" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h6 class="card-title">Garden Villa</h6>
+                        <p class="text-muted small">Private villa surrounded by tropical gardens</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">$350/night</span>
+                            <a href="#" class="btn btn-sm btn-outline-primary">View</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <img src="https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
+                         class="card-img-top" alt="Presidential Suite" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h6 class="card-title">Presidential Suite</h6>
+                        <p class="text-muted small">Ultimate luxury with private terrace</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">$850/night</span>
+                            <a href="#" class="btn btn-sm btn-outline-primary">View</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function() {
+    const pricePerNight = {{ room_type.price_per_night }};
+    
+    // Set minimum date for check-in to today
+    const today = new Date().toISOString().split('T')[0];
+    $('#checkIn').attr('min', today);
+    
+    // Update check-out minimum date when check-in changes
+    $('#checkIn').change(function() {
+        const checkInDate = new Date(this.value);
+        checkInDate.setDate(checkInDate.getDate() + 1);
+        const minCheckOut = checkInDate.toISOString().split('T')[0];
+        $('#checkOut').attr('min', minCheckOut);
+        
+        if ($('#checkOut').val() && $('#checkOut').val() <= this.value) {
+            $('#checkOut').val(minCheckOut);
+        }
+        
+        calculateTotal();
+    });
+    
+    $('#checkOut').change(calculateTotal);
+    
+    function calculateTotal() {
+        const checkIn = $('#checkIn').val();
+        const checkOut = $('#checkOut').val();
+        
+        if (checkIn && checkOut) {
+            const startDate = new Date(checkIn);
+            const endDate = new Date(checkOut);
+            const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            
+            if (nights > 0) {
+                const total = nights * pricePerNight;
+                $('#nightsCount').text(nights + ' night' + (nights > 1 ? 's' : ''));
+                $('#totalPrice').text('$' + total.toLocaleString('en-US', {minimumFractionDigits: 2}));
+            } else {
+                $('#nightsCount').text('-');
+                $('#totalPrice').text('-');
+            }
+        } else {
+            $('#nightsCount').text('-');
+            $('#totalPrice').text('-');
+        }
+    }
+    
+    // Handle form submission
+    $('#quickBookingForm').submit(function(e) {
+        e.preventDefault();
+        const checkIn = $('#checkIn').val();
+        const checkOut = $('#checkOut').val();
+        const guests = $('#guests').val();
+        
+        if (checkIn && checkOut && guests) {
+            // Redirect to booking page with pre-filled data
+            const url = "{{ url_for('book_room', room_type_id=room_type.id) }}" + 
+                       "?check_in=" + checkIn + 
+                       "&check_out=" + checkOut + 
+                       "&guests=" + guests;
+            window.location.href = url;
+        }
+    });
+});
+</script>
+{% endblock %}

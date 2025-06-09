@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+
+{% block title %}Book {{ room_type.name }} - Luxury Resort{% endblock %}
+
+{% block content %}
+<!-- Booking Header -->
+<section class="booking-header py-5 bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="luxury-title mb-3">Book Your Stay</h1>
+                <p class="lead text-muted">Complete your reservation for {{ room_type.name }}</p>
+            </div>
+            <div class="col-lg-4 text-end">
+                <div class="booking-price-display">
+                    <span class="price-large">{{ format_currency(room_type.price_per_night) }}</span>
+                    <span class="price-period"> / night</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Booking Form -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Booking Form -->
+            <div class="col-lg-8 mb-5">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-header bg-luxury text-white py-4">
+                        <h4 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Reservation Details</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="POST" id="bookingForm">
+                            {{ form.hidden_tag() }}
+                            
+                            <!-- Check-in/Check-out Dates -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="{{ form.check_in_date.id }}" class="form-label">
+                                        <i class="fas fa-calendar-check me-2 luxury-accent"></i>Check-in Date
+                                    </label>
+                                    {{ form.check_in_date(class="form-control form-control-lg") }}
+                                    {% if form.check_in_date.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.check_in_date.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.check_out_date.id }}" class="form-label">
+                                        <i class="fas fa-calendar-times me-2 luxury-accent"></i>Check-out Date
+                                    </label>
+                                    {{ form.check_out_date(class="form-control form-control-lg") }}
+                                    {% if form.check_out_date.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.check_out_date.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Number of Guests -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="{{ form.num_guests.id }}" class="form-label">
+                                        <i class="fas fa-users me-2 luxury-accent"></i>Number of Guests
+                                    </label>
+                                    {{ form.num_guests(class="form-control form-control-lg", max=room_type.max_occupancy) }}
+                                    <small class="text-muted">Maximum {{ room_type.max_occupancy }} guests for this room type</small>
+                                    {% if form.num_guests.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.num_guests.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Special Requests -->
+                            <div class="mb-4">
+                                <label for="{{ form.special_requests.id }}" class="form-label">
+                                    <i class="fas fa-comment me-2 luxury-accent"></i>Special Requests (Optional)
+                                </label>
+                                {{ form.special_requests(class="form-control", rows="4", placeholder="Any special requests or preferences for your stay...") }}
+                                {% if form.special_requests.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.special_requests.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Terms and Conditions -->
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                                    <label class="form-check-label" for="termsCheck">
+                                        I agree to the <a href="#" class="luxury-link">Terms and Conditions</a> and <a href="#" class="luxury-link">Cancellation Policy</a>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-luxury btn-lg py-3">
+                                    <i class="fas fa-credit-card me-2"></i>Proceed to Payment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Guest Information Notice -->
+                {% if not current_user.is_authenticated %}
+                <div class="alert alert-info mt-4" role="alert">
+                    <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Account Required</h6>
+                    <p class="mb-0">You'll need to log in or create an account to complete your booking. Don't worry, we'll save your booking details!</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Booking Summary -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-lg booking-summary sticky-top">
+                    <div class="card-header bg-dark text-white py-4">
+                        <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Booking Summary</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Room Details -->
+                        <div class="room-summary mb-4">
+                            <div class="d-flex mb-3">
+                                <img src="{{ room_type.image_url or 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80' }}" 
+                                     alt="{{ room_type.name }}" class="room-thumb me-3">
+                                <div>
+                                    <h6 class="mb-1">{{ room_type.name }}</h6>
+                                    <small class="text-muted">{{ room_type.max_occupancy }} guests maximum</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Date Summary -->
+                        <div class="booking-details mb-4" id="bookingSummary" style="display: none;">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Check-in:</span>
+                                <span id="summaryCheckIn">-</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Check-out:</span>
+                                <span id="summaryCheckOut">-</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Guests:</span>
+                                <span id="summaryGuests">-</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Nights:</span>
+                                <span id="summaryNights">-</span>
+                            </div>
+                            <hr>
+                        </div>
+                        
+                        <!-- Price Breakdown -->
+                        <div class="price-breakdown" id="priceBreakdown" style="display: none;">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Rate per night:</span>
+                                <span>{{ format_currency(room_type.price_per_night) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span id="nightsLabel">Nights:</span>
+                                <span id="nightsTotal">-</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Subtotal:</span>
+                                <span id="subtotal">-</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Taxes & Fees:</span>
+                                <span id="taxes">-</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold h5">
+                                <span>Total:</span>
+                                <span id="grandTotal" class="luxury-accent">-</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Policies -->
+                        <div class="policies mt-4 pt-3 border-top">
+                            <small class="text-muted">
+                                <div class="mb-2">
+                                    <i class="fas fa-shield-alt me-1 text-success"></i>
+                                    Free cancellation up to 24 hours before check-in
+                                </div>
+                                <div class="mb-2">
+                                    <i class="fas fa-credit-card me-1 text-success"></i>
+                                    Secure payment processing
+                                </div>
+                                <div>
+                                    <i class="fas fa-clock me-1 text-success"></i>
+                                    Instant booking confirmation
+                                </div>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Help Card -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body text-center p-4">
+                        <h6 class="mb-3">Need Assistance?</h6>
+                        <p class="text-muted small mb-3">Our reservation team is here to help 24/7</p>
+                        <a href="{{ url_for('contact') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-phone me-2"></i>Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function() {
+    const pricePerNight = {{ room_type.price_per_night }};
+    const taxRate = 0.12; // 12% tax rate
+    
+    // Set minimum date for check-in to today
+    const today = new Date().toISOString().split('T')[0];
+    $('#{{ form.check_in_date.id }}').attr('min', today);
+    
+    // Update check-out minimum date when check-in changes
+    $('#{{ form.check_in_date.id }}').change(function() {
+        const checkInDate = new Date(this.value);
+        checkInDate.setDate(checkInDate.getDate() + 1);
+        const minCheckOut = checkInDate.toISOString().split('T')[0];
+        $('#{{ form.check_out_date.id }}').attr('min', minCheckOut);
+        
+        if ($('#{{ form.check_out_date.id }}').val() && $('#{{ form.check_out_date.id }}').val() <= this.value) {
+            $('#{{ form.check_out_date.id }}').val(minCheckOut);
+        }
+        
+        updateSummary();
+    });
+    
+    $('#{{ form.check_out_date.id }}, #{{ form.num_guests.id }}').change(updateSummary);
+    
+    function updateSummary() {
+        const checkIn = $('#{{ form.check_in_date.id }}').val();
+        const checkOut = $('#{{ form.check_out_date.id }}').val();
+        const guests = $('#{{ form.num_guests.id }}').val();
+        
+        if (checkIn && checkOut && guests) {
+            const startDate = new Date(checkIn);
+            const endDate = new Date(checkOut);
+            const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            
+            if (nights > 0) {
+                // Update summary section
+                $('#summaryCheckIn').text(startDate.toLocaleDateString());
+                $('#summaryCheckOut').text(endDate.toLocaleDateString());
+                $('#summaryGuests').text(guests + ' guest' + (guests > 1 ? 's' : ''));
+                $('#summaryNights').text(nights + ' night' + (nights > 1 ? 's' : ''));
+                
+                // Calculate prices
+                const subtotal = nights * pricePerNight;
+                const taxes = subtotal * taxRate;
+                const total = subtotal + taxes;
+                
+                $('#nightsLabel').text(nights + ' night' + (nights > 1 ? 's' : '') + ':');
+                $('#nightsTotal').text('$' + subtotal.toLocaleString('en-US', {minimumFractionDigits: 2}));
+                $('#subtotal').text('$' + subtotal.toLocaleString('en-US', {minimumFractionDigits: 2}));
+                $('#taxes').text('$' + taxes.toLocaleString('en-US', {minimumFractionDigits: 2}));
+                $('#grandTotal').text('$' + total.toLocaleString('en-US', {minimumFractionDigits: 2}));
+                
+                // Show summary sections
+                $('#bookingSummary, #priceBreakdown').show();
+            } else {
+                $('#bookingSummary, #priceBreakdown').hide();
+            }
+        } else {
+            $('#bookingSummary, #priceBreakdown').hide();
+        }
+    }
+    
+    // Pre-fill form data from URL parameters (from room detail page)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('check_in')) {
+        $('#{{ form.check_in_date.id }}').val(urlParams.get('check_in'));
+    }
+    if (urlParams.get('check_out')) {
+        $('#{{ form.check_out_date.id }}').val(urlParams.get('check_out'));
+    }
+    if (urlParams.get('guests')) {
+        $('#{{ form.num_guests.id }}').val(urlParams.get('guests'));
+    }
+    
+    // Update summary on page load
+    updateSummary();
+    
+    // Form validation
+    $('#bookingForm').submit(function(e) {
+        const checkIn = $('#{{ form.check_in_date.id }}').val();
+        const checkOut = $('#{{ form.check_out_date.id }}').val();
+        const guests = $('#{{ form.num_guests.id }}').val();
+        const termsChecked = $('#termsCheck').is(':checked');
+        
+        if (!checkIn || !checkOut || !guests || !termsChecked) {
+            e.preventDefault();
+            if (!termsChecked) {
+                alert('Please accept the terms and conditions to proceed.');
+            }
+            return false;
+        }
+        
+        // Show loading state
+        $(this).find('button[type="submit"]').html('<i class="fas fa-spinner fa-spin me-2"></i>Processing...').prop('disabled', true);
+    });
+});
+</script>
+{% endblock %}

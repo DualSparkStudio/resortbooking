@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Luxury Rooms & Suites - Luxury Resort{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="row justify-content-center text-center text-white">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">Luxury Accommodations</h1>
+                <p class="lead">Discover our collection of exquisite rooms and suites</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Rooms Grid -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            {% for room_type in room_types %}
+            <div class="col-lg-4 col-md-6 mb-5">
+                <div class="card h-100 border-0 shadow-lg room-card">
+                    <div class="room-image-container position-relative">
+                        <img src="{{ room_type.image_url or 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}" 
+                             class="card-img-top room-image" alt="{{ room_type.name }}">
+                        <div class="room-price-badge">
+                            <span class="room-price">{{ format_currency(room_type.price_per_night) }}</span>
+                            <span class="room-price-period">/night</span>
+                        </div>
+                        <div class="room-overlay">
+                            <a href="{{ url_for('room_detail', room_type_id=room_type.id) }}" class="btn btn-light">
+                                <i class="fas fa-eye me-2"></i>View Details
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body d-flex flex-column p-4">
+                        <h4 class="card-title mb-3">{{ room_type.name }}</h4>
+                        <p class="card-text text-muted flex-grow-1 mb-3">{{ room_type.description }}</p>
+                        
+                        <!-- Room Features -->
+                        <div class="room-features mb-4">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2">
+                                        <i class="fas fa-users me-1"></i>{{ room_type.max_occupancy }} Guests
+                                    </span>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2">
+                                        <i class="fas fa-wifi me-1"></i>Free WiFi
+                                    </span>
+                                </div>
+                                {% if room_type.amenities %}
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2">
+                                        <i class="fas fa-concierge-bell me-1"></i>Room Service
+                                    </span>
+                                </div>
+                                <div class="col-6">
+                                    <span class="badge bg-light text-dark w-100 py-2">
+                                        <i class="fas fa-tv me-1"></i>Smart TV
+                                    </span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('room_detail', room_type_id=room_type.id) }}" class="btn btn-outline-primary flex-grow-1">
+                                <i class="fas fa-info-circle me-1"></i>Details
+                            </a>
+                            <a href="{{ url_for('book_room', room_type_id=room_type.id) }}" class="btn btn-luxury flex-grow-1">
+                                <i class="fas fa-calendar-check me-1"></i>Book Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if not room_types %}
+        <div class="row">
+            <div class="col-12 text-center">
+                <div class="py-5">
+                    <i class="fas fa-bed fa-4x text-muted mb-4"></i>
+                    <h3 class="text-muted">No rooms available at the moment</h3>
+                    <p class="lead text-muted">Please check back later or contact us for more information.</p>
+                    <a href="{{ url_for('contact') }}" class="btn btn-primary">Contact Us</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Room Amenities Overview -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="luxury-title">Standard Room Amenities</h2>
+            <p class="lead text-muted">Every room includes these luxury features</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center amenity-item">
+                    <div class="amenity-icon mb-3">
+                        <i class="fas fa-wifi fa-2x luxury-accent"></i>
+                    </div>
+                    <h6>High-Speed WiFi</h6>
+                    <p class="text-muted small">Complimentary internet access</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center amenity-item">
+                    <div class="amenity-icon mb-3">
+                        <i class="fas fa-tv fa-2x luxury-accent"></i>
+                    </div>
+                    <h6>Smart TV</h6>
+                    <p class="text-muted small">65" 4K TV with streaming</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center amenity-item">
+                    <div class="amenity-icon mb-3">
+                        <i class="fas fa-snowflake fa-2x luxury-accent"></i>
+                    </div>
+                    <h6>Climate Control</h6>
+                    <p class="text-muted small">Individual AC/heating</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center amenity-item">
+                    <div class="amenity-icon mb-3">
+                        <i class="fas fa-bath fa-2x luxury-accent"></i>
+                    </div>
+                    <h6>Luxury Bathroom</h6>
+                    <p class="text-muted small">Marble finishes & premium amenities</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center amenity-item">
+                    <div class="amenity-icon mb-3">
+                        <i class="fas fa-concierge-bell fa-2x luxury-accent"></i>
+                    </div>
+                    <h6>24/7 Room Service</h6>
+                    <p class="text-muted small">In-room dining available</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center amenity-item">
+                    <div class="amenity-icon mb-3">
+                        <i class="fas fa-shield-alt fa-2x luxury-accent"></i>
+                    </div>
+                    <h6>Safe & Security</h6>
+                    <p class="text-muted small">In-room safe & 24/7 security</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center amenity-item">
+                    <div class="amenity-icon mb-3">
+                        <i class="fas fa-coffee fa-2x luxury-accent"></i>
+                    </div>
+                    <h6>Mini Bar</h6>
+                    <p class="text-muted small">Stocked with premium beverages</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="text-center amenity-item">
+                    <div class="amenity-icon mb-3">
+                        <i class="fas fa-tshirt fa-2x luxury-accent"></i>
+                    </div>
+                    <h6>Laundry Service</h6>
+                    <p class="text-muted small">Professional cleaning service</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 cta-section">
+    <div class="container">
+        <div class="row justify-content-center text-center text-white">
+            <div class="col-lg-8">
+                <h2 class="display-5 fw-bold mb-4">Ready to Book Your Perfect Room?</h2>
+                <p class="lead mb-5">Experience luxury accommodations that exceed your expectations. Book now for the best rates and availability.</p>
+                <a href="{{ url_for('contact') }}" class="btn btn-light btn-lg px-5 me-3">
+                    <i class="fas fa-phone me-2"></i>Call to Book
+                </a>
+                <a href="{{ url_for('facilities') }}" class="btn btn-outline-light btn-lg px-5">
+                    <i class="fas fa-spa me-2"></i>View Facilities
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

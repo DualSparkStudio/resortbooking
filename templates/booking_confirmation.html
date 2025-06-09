@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Booking Confirmed - Luxury Resort{% endblock %}
+
+{% block content %}
+<!-- Confirmation Header -->
+<section class="confirmation-header py-5 bg-success text-white">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <div class="confirmation-icon mb-4">
+                    <i class="fas fa-check-circle fa-4x"></i>
+                </div>
+                <h1 class="display-4 fw-bold mb-3">Booking Confirmed!</h1>
+                <p class="lead">Thank you for choosing Luxury Resort. Your reservation has been successfully confirmed.</p>
+                <div class="confirmation-number mt-4">
+                    <span class="badge bg-light text-dark fs-6 px-4 py-2">
+                        Booking ID: #{{ booking.id }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Booking Details -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-header bg-luxury text-white py-4">
+                        <h4 class="mb-0"><i class="fas fa-receipt me-2"></i>Booking Details</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row">
+                            <!-- Guest Information -->
+                            <div class="col-md-6 mb-4">
+                                <h6 class="luxury-accent mb-3">Guest Information</h6>
+                                <div class="guest-details">
+                                    <div class="detail-item mb-2">
+                                        <strong>Name:</strong> {{ booking.user.get_full_name() }}
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <strong>Email:</strong> {{ booking.user.email }}
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <strong>Phone:</strong> {{ booking.user.phone or 'Not provided' }}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>Booking Date:</strong> {{ booking.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Reservation Details -->
+                            <div class="col-md-6 mb-4">
+                                <h6 class="luxury-accent mb-3">Reservation Details</h6>
+                                <div class="reservation-details">
+                                    <div class="detail-item mb-2">
+                                        <strong>Room:</strong> {{ booking.room.room_type.name }}
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <strong>Room Number:</strong> {{ booking.room.room_number }}
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <strong>Check-in:</strong> {{ booking.check_in_date.strftime('%A, %B %d, %Y') }}
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <strong>Check-out:</strong> {{ booking.check_out_date.strftime('%A, %B %d, %Y') }}
+                                    </div>
+                                    <div class="detail-item">
+                                        <strong>Guests:</strong> {{ booking.num_guests }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Special Requests -->
+                        {% if booking.special_requests %}
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="luxury-accent mb-3">Special Requests</h6>
+                                <div class="alert alert-light">
+                                    <p class="mb-0">{{ booking.special_requests }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Payment Summary -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="luxury-accent mb-3">Payment Summary</h6>
+                                <div class="payment-summary bg-light p-3 rounded">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Duration:</span>
+                                        <span>{{ booking.get_duration_days() }} night{{ 's' if booking.get_duration_days() > 1 else '' }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Rate per night:</span>
+                                        <span>{{ format_currency(booking.room.room_type.price_per_night) }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Payment Status:</span>
+                                        <span class="badge bg-success">{{ booking.payment_status.title() }}</span>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between fw-bold h5">
+                                        <span>Total Paid:</span>
+                                        <span class="luxury-accent">{{ format_currency(booking.total_amount) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Next Steps -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-transparent border-0 py-3">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2 luxury-accent"></i>What's Next?</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="next-step-icon mb-2">
+                                    <i class="fas fa-envelope fa-2x luxury-accent"></i>
+                                </div>
+                                <h6>Confirmation Email</h6>
+                                <p class="text-muted small">A detailed confirmation email has been sent to {{ booking.user.email }}</p>
+                            </div>
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="next-step-icon mb-2">
+                                    <i class="fas fa-mobile-alt fa-2x luxury-accent"></i>
+                                </div>
+                                <h6>Check-in Information</h6>
+                                <p class="text-muted small">Check-in begins at 3:00 PM on your arrival date</p>
+                            </div>
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="next-step-icon mb-2">
+                                    <i class="fas fa-concierge-bell fa-2x luxury-accent"></i>
+                                </div>
+                                <h6>Concierge Service</h6>
+                                <p class="text-muted small">Our concierge team will contact you before your arrival</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="text-center mt-4">
+                    <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-luxury btn-lg px-4">
+                            <i class="fas fa-tachometer-alt me-2"></i>View Dashboard
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-lg px-4">
+                            <i class="fas fa-home me-2"></i>Return Home
+                        </a>
+                        <a href="{{ url_for('contact') }}" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="fas fa-phone me-2"></i>Contact Us
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Important Information -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="info-card text-center">
+                            <i class="fas fa-clock fa-2x luxury-accent mb-3"></i>
+                            <h6>Check-in/Check-out Times</h6>
+                            <p class="text-muted small mb-0">
+                                Check-in: 3:00 PM<br>
+                                Check-out: 11:00 AM
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="info-card text-center">
+                            <i class="fas fa-shield-alt fa-2x luxury-accent mb-3"></i>
+                            <h6>Cancellation Policy</h6>
+                            <p class="text-muted small mb-0">
+                                Free cancellation up to 24 hours<br>
+                                before your check-in date
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="info-card text-center">
+                            <i class="fas fa-car fa-2x luxury-accent mb-3"></i>
+                            <h6>Airport Transfer</h6>
+                            <p class="text-muted small mb-0">
+                                Complimentary shuttle service<br>
+                                available upon request
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="info-card text-center">
+                            <i class="fas fa-wifi fa-2x luxury-accent mb-3"></i>
+                            <h6>Resort Amenities</h6>
+                            <p class="text-muted small mb-0">
+                                Free WiFi, pool access,<br>
+                                and fitness center included
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function() {
+    // Auto-scroll to content after page load
+    setTimeout(function() {
+        $('html, body').animate({
+            scrollTop: $('.confirmation-header').offset().top
+        }, 1000);
+    }, 500);
+});
+</script>
+{% endblock %}
