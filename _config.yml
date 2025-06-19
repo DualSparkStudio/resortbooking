@@ -1,0 +1,34 @@
+title: Luxury Resort Booking System
+description: A full-stack Flask application for resort booking and management
+url: "https://yourusername.github.io"
+baseurl: "/resort-booking"
+
+# Build settings
+markdown: kramdown
+theme: minima
+
+# Exclude Flask app files from Jekyll build
+exclude:
+  - app.py
+  - models.py
+  - routes.py
+  - forms.py
+  - utils.py
+  - requirements.txt
+  - Procfile
+  - runtime.txt
+  - render.yaml
+  - instance/
+  - migrations/
+  - templates/
+  - static/
+  - venv/
+  - __pycache__/
+  - "*.pyc"
+  - "*.py"
+  - alembic.ini
+  - deployment-guide.md
+
+# Include only the static landing page files
+include:
+  - index.html 

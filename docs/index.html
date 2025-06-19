@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury Resort - Paradise Awaits</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-blue: #2c5f7c;
+            --primary-blue-light: #4a7c95;
+            --ocean-blue: #5085a5;
+            --sky-blue: #8bb8d8;
+            --forest-green: #4a6741;
+            --sage-green: #87a96b;
+            --mint-green: #a8d5ba;
+            --warm-terracotta: #c1502e;
+            --soft-amber: #d4a574;
+            --warm-white: #fdfcf8;
+            --text-dark: #2c3e35;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            line-height: 1.7;
+            color: var(--text-dark);
+            background-color: var(--warm-white);
+        }
+
+        .luxury-title {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary-blue);
+            font-weight: 700;
+        }
+
+        .luxury-brand {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: white;
+        }
+
+        .hero-section {
+            height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
+                        url('https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
+            display: flex;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+
+        .luxury-nav {
+            background: linear-gradient(135deg, rgba(44, 95, 124, 0.95) 0%, rgba(135, 169, 107, 0.95) 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 4px 20px rgba(44, 95, 124, 0.2);
+        }
+
+        .btn-luxury {
+            background: linear-gradient(135deg, var(--warm-terracotta) 0%, var(--soft-amber) 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-luxury:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(193, 80, 46, 0.3);
+            color: white;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(44, 95, 124, 0.12);
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: none;
+            height: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(44, 95, 124, 0.18);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--ocean-blue);
+            margin-bottom: 1rem;
+        }
+
+        .stats-section {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--sage-green) 100%);
+            color: white;
+            padding: 4rem 0;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--sky-blue) 100%);
+            padding: 4rem 0;
+        }
+
+        .demo-badge {
+            background: var(--warm-terracotta);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2.5rem;
+            }
+            .demo-badge {
+                display: block;
+                margin: 1rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top luxury-nav">
+        <div class="container">
+            <a class="navbar-brand luxury-brand" href="#">
+                <i class="fas fa-crown me-2"></i>Luxury Resort
+            </a>
+            <span class="demo-badge">
+                <i class="fas fa-code me-1"></i>Demo Project
+            </span>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <h1 class="display-3 fw-bold mb-4 luxury-title">Welcome to Paradise</h1>
+                    <p class="lead mb-5">Experience luxury redefined at our world-class resort booking system. This is a demonstration of a full-stack Flask application.</p>
+                    
+                    <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
+                        <a href="#" id="liveAppBtn" class="btn btn-luxury btn-lg">
+                            <i class="fas fa-external-link-alt me-2"></i>View Live Application
+                        </a>
+                        <a href="https://github.com/yourusername/resort-booking" class="btn btn-outline-light btn-lg">
+                            <i class="fab fa-github me-2"></i>View Source Code
+                        </a>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <small class="text-light">
+                            <i class="fas fa-info-circle me-1"></i>
+                            This static page is hosted on GitHub Pages. The full Flask application is deployed separately.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="luxury-title">Project Features</h2>
+                <p class="lead text-muted">A comprehensive resort booking and management system</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h5>Online Booking System</h5>
+                        <p class="text-muted">Multi-step booking flow with real-time availability checking and Stripe payment integration.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bed"></i>
+                        </div>
+                        <h5>Room Management</h5>
+                        <p class="text-muted">Complete room type and inventory management with image galleries and amenity tracking.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <h5>Admin Dashboard</h5>
+                        <p class="text-muted">Comprehensive admin panel for managing bookings, users, rooms, and resort operations.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <h5>Payment Processing</h5>
+                        <p class="text-muted">Secure Stripe integration for handling payments with automated booking confirmations.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h5>User Authentication</h5>
+                        <p class="text-muted">Secure user registration and login system with guest booking capabilities.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h5>Email System</h5>
+                        <p class="text-muted">Automated email confirmations and contact form notifications.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-number">10+</div>
+                    <div>Database Models</div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-number">50+</div>
+                    <div>Routes & Endpoints</div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-number">20+</div>
+                    <div>Templates</div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-number">100%</div>
+                    <div>Responsive Design</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="luxury-title">Technology Stack</h2>
+                <p class="lead text-muted">Built with modern web technologies</p>
+            </div>
+            
+            <div class="row text-center g-4">
+                <div class="col-lg-2 col-md-4 col-6">
+                    <div class="p-3">
+                        <i class="fab fa-python fa-3x text-primary mb-2"></i>
+                        <h6>Python Flask</h6>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6">
+                    <div class="p-3">
+                        <i class="fas fa-database fa-3x text-success mb-2"></i>
+                        <h6>SQLAlchemy</h6>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6">
+                    <div class="p-3">
+                        <i class="fab fa-bootstrap fa-3x text-info mb-2"></i>
+                        <h6>Bootstrap 5</h6>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6">
+                    <div class="p-3">
+                        <i class="fab fa-stripe fa-3x text-warning mb-2"></i>
+                        <h6>Stripe API</h6>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6">
+                    <div class="p-3">
+                        <i class="fab fa-js-square fa-3x text-danger mb-2"></i>
+                        <h6>JavaScript</h6>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6">
+                    <div class="p-3">
+                        <i class="fas fa-envelope fa-3x text-secondary mb-2"></i>
+                        <h6>Flask-Mail</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container text-center">
+            <h2 class="luxury-title mb-4">Ready to Explore?</h2>
+            <p class="lead mb-4">Experience the full functionality of this resort booking system</p>
+            
+            <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
+                <a href="#" id="liveAppBtn2" class="btn btn-luxury btn-lg">
+                    <i class="fas fa-play me-2"></i>Launch Application
+                </a>
+                <a href="deployment-guide.md" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-rocket me-2"></i>Deployment Guide
+                </a>
+            </div>
+            
+            <div class="mt-4">
+                <small class="text-muted">
+                    <i class="fas fa-server me-1"></i>
+                    The full application requires a Python server environment and is deployed on platforms like Render.com, Heroku, or Railway.
+                </small>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2024 Luxury Resort Booking System - Demo Project</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="social-links">
+                        <a href="#" class="text-light me-3"><i class="fab fa-github"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-light"><i class="fas fa-envelope"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Update live app links
+        document.addEventListener('DOMContentLoaded', function() {
+            const liveAppUrl = 'https://your-app-name.onrender.com'; // Update this with your actual deployed URL
+            
+            document.getElementById('liveAppBtn').href = liveAppUrl;
+            document.getElementById('liveAppBtn2').href = liveAppUrl;
+            
+            // If no live app URL is set, show a message
+            if (liveAppUrl.includes('your-app-name')) {
+                document.getElementById('liveAppBtn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    alert('Please deploy your Flask app first and update the liveAppUrl in this HTML file.');
+                });
+                document.getElementById('liveAppBtn2').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    alert('Please deploy your Flask app first and update the liveAppUrl in this HTML file.');
+                });
+            }
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
