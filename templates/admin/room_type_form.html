@@ -4,13 +4,13 @@
 
 {% block admin_content %}
 <div class="row justify-content-center">
-    <div class="col-lg-8">
+    <div class="col-lg-10">
         <div class="card shadow-lg">
             <div class="card-header bg-gradient text-white">
                 <h4 class="mb-0">{{ title }}</h4>
             </div>
             <div class="card-body">
-                <form method="POST" enctype="multipart/form-data">
+                <form method="POST" enctype="multipart/form-data" id="roomTypeForm">
                     {{ form.hidden_tag() }}
                     
                     <div class="row">
@@ -83,10 +83,68 @@
                         {% endif %}
                     </div>
 
+                    <!-- Multiple Images Section -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-images me-2"></i>Room Images
+                        </label>
+                        <small class="text-muted d-block mb-3">Add multiple images for this room type. Mark one as primary to be displayed first.</small>
+                        
+                        <div id="image-container">
+                            {% for image_form in form.images %}
+                                <div class="image-input-group mb-3 p-3 border rounded" data-index="{{ loop.index0 }}">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {{ image_form.image_url.label(class="form-label") }}
+                                            {{ image_form.image_url(class="form-control") }}
+                                            {% if image_form.image_url.errors %}
+                                                <div class="text-danger">
+                                                    {% for error in image_form.image_url.errors %}
+                                                        <small>{{ error }}</small>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            {{ image_form.alt_text.label(class="form-label") }}
+                                            {{ image_form.alt_text(class="form-control") }}
+                                            {% if image_form.alt_text.errors %}
+                                                <div class="text-danger">
+                                                    {% for error in image_form.alt_text.errors %}
+                                                        <small>{{ error }}</small>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-2 d-flex align-items-end">
+                                            <div class="form-check mb-2">
+                                                {{ image_form.is_primary(class="form-check-input primary-checkbox") }}
+                                                {{ image_form.is_primary.label(class="form-check-label") }}
+                                            </div>
+                                            <button type="button" class="btn btn-danger btn-sm ms-2 remove-image" style="margin-bottom: 6px;">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Image Preview -->
+                                    <div class="image-preview mt-2" style="display: none;">
+                                        <img src="" alt="Preview" class="img-thumbnail" style="max-height: 100px;">
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <button type="button" id="add-image" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i>Add Another Image
+                        </button>
+                    </div>
+
+                    <!-- Legacy Image URL (for backward compatibility) -->
                     <div class="mb-3">
                         {{ form.image_url.label(class="form-label") }}
                         {{ form.image_url(class="form-control") }}
-                        <small class="text-muted">Enter a URL for the room image</small>
+                        <small class="text-muted">This field is kept for backward compatibility. Use the multiple images section above instead.</small>
                         {% if form.image_url.errors %}
                             <div class="text-danger">
                                 {% for error in form.image_url.errors %}
@@ -116,4 +174,113 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let imageCount = {{ form.images|length }};
+    const maxImages = 10;
+    
+    // Add new image input
+    document.getElementById('add-image').addEventListener('click', function() {
+        if (imageCount >= maxImages) {
+            alert('Maximum 10 images allowed');
+            return;
+        }
+        
+        const container = document.getElementById('image-container');
+        const newImageHtml = `
+            <div class="image-input-group mb-3 p-3 border rounded" data-index="${imageCount}">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">Image URL</label>
+                        <input type="text" class="form-control" name="images-${imageCount}-image_url" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Alt Text</label>
+                        <input type="text" class="form-control" name="images-${imageCount}-alt_text">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <div class="form-check mb-2">
+                            <input type="checkbox" class="form-check-input primary-checkbox" name="images-${imageCount}-is_primary">
+                            <label class="form-check-label">Primary Image</label>
+                        </div>
+                        <button type="button" class="btn btn-danger btn-sm ms-2 remove-image" style="margin-bottom: 6px;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="image-preview mt-2" style="display: none;">
+                    <img src="" alt="Preview" class="img-thumbnail" style="max-height: 100px;">
+                </div>
+            </div>
+        `;
+        
+        container.insertAdjacentHTML('beforeend', newImageHtml);
+        imageCount++;
+        
+        // Attach event listeners to new elements
+        attachImageEventListeners();
+    });
+    
+    // Remove image input
+    function attachImageEventListeners() {
+        document.querySelectorAll('.remove-image').forEach(button => {
+            button.removeEventListener('click', removeImageHandler);
+            button.addEventListener('click', removeImageHandler);
+        });
+        
+        // Primary checkbox handling
+        document.querySelectorAll('.primary-checkbox').forEach(checkbox => {
+            checkbox.removeEventListener('change', primaryCheckboxHandler);
+            checkbox.addEventListener('change', primaryCheckboxHandler);
+        });
+        
+        // Image preview
+        document.querySelectorAll('input[name*="image_url"]').forEach(input => {
+            input.removeEventListener('blur', imagePreviewHandler);
+            input.addEventListener('blur', imagePreviewHandler);
+        });
+    }
+    
+    function removeImageHandler(e) {
+        if (document.querySelectorAll('.image-input-group').length <= 1) {
+            alert('At least one image is required');
+            return;
+        }
+        e.target.closest('.image-input-group').remove();
+        imageCount--;
+    }
+    
+    function primaryCheckboxHandler(e) {
+        if (e.target.checked) {
+            // Uncheck all other primary checkboxes
+            document.querySelectorAll('.primary-checkbox').forEach(cb => {
+                if (cb !== e.target) {
+                    cb.checked = false;
+                }
+            });
+        }
+    }
+    
+    function imagePreviewHandler(e) {
+        const url = e.target.value;
+        const previewContainer = e.target.closest('.image-input-group').querySelector('.image-preview');
+        const previewImg = previewContainer.querySelector('img');
+        
+        if (url && isValidImageUrl(url)) {
+            previewImg.src = url;
+            previewContainer.style.display = 'block';
+        } else {
+            previewContainer.style.display = 'none';
+        }
+    }
+    
+    function isValidImageUrl(url) {
+        return /\.(jpg|jpeg|png|gif|webp)$/i.test(url) || url.includes('unsplash.com') || url.includes('images.');
+    }
+    
+    // Initialize event listeners
+    attachImageEventListeners();
+});
+</script>
 {% endblock %}

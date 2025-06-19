@@ -104,7 +104,7 @@
     {% endwith %}
     
     <!-- Main Content -->
-    <main>
+    <main class="page-transition">
         {% block content %}{% endblock %}
     </main>
     
@@ -178,6 +178,15 @@
     
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Page transition effect -->
+    <script>
+        $(document).ready(function() {
+            setTimeout(function() {
+                $('.page-transition').addClass('loaded');
+            }, 100);
+        });
+    </script>
     
     {% block extra_scripts %}{% endblock %}
 </body>

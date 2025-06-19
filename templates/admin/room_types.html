@@ -29,9 +29,13 @@
                     {% for room_type in room_types %}
                     <tr>
                         <td>
-                            {% if room_type.image_url %}
-                                <img src="{{ room_type.image_url }}" alt="{{ room_type.name }}" 
+                            {% set primary_image = room_type.get_primary_image() %}
+                            {% if primary_image %}
+                                <img src="{{ primary_image }}" alt="{{ room_type.name }}" 
                                      class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                                {% if room_type.images|length > 1 %}
+                                    <small class="text-muted d-block">+{{ room_type.images|length - 1 }} more</small>
+                                {% endif %}
                             {% else %}
                                 <div class="bg-light d-flex align-items-center justify-content-center" 
                                      style="width: 60px; height: 60px;">
@@ -65,6 +69,11 @@
                                    class="btn btn-sm btn-warning" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        onclick="deleteRoomType({{ room_type.id }}, '{{ room_type.name }}')" 
+                                        title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -74,4 +83,27 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function deleteRoomType(roomTypeId, roomTypeName) {
+    if (confirm(`Are you sure you want to delete the room type "${roomTypeName}"? This action cannot be undone.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/room-types/delete/${roomTypeId}`;
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
 {% endblock %}

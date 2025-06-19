@@ -21,6 +21,7 @@ def check_room_availability(room_type_id, check_in_date, check_out_date, exclude
     
     for room in rooms:
         # Check if this room has any conflicting bookings
+        # Allow same-day checkout/checkin: existing checkout = new checkin is allowed
         query = Booking.query.filter(
             Booking.room_id == room.id,
             Booking.booking_status.in_(['confirmed', 'pending']),
@@ -43,9 +44,16 @@ def calculate_booking_total(room_type, check_in_date, check_out_date):
     nights = (check_out_date - check_in_date).days
     return float(room_type.price_per_night) * nights
 
-def create_stripe_checkout_session(booking):
+def create_stripe_checkout_session(booking, stripe_secret_key, stripe_publishable_key):
     """Create a Stripe checkout session for a booking"""
     try:
+        # Set Stripe API key for this request
+        stripe.api_key = stripe_secret_key
+
+        if not stripe.api_key:
+            current_app.logger.error("Stripe API key not configured in settings")
+            return None
+        
         # Determine the domain for redirect URLs
         domain = os.environ.get('REPLIT_DEV_DOMAIN')
         if not domain:
@@ -53,7 +61,10 @@ def create_stripe_checkout_session(booking):
             domain = domains[0] if domains else 'localhost:5000'
         
         if not domain.startswith('http'):
-            domain = f'https://{domain}'
+            if 'localhost' in domain or '127.0.0.1' in domain:
+                domain = f'http://{domain}'
+            else:
+                domain = f'https://{domain}'
         
         session = stripe.checkout.Session.create(
             payment_method_types=['card'],
@@ -85,15 +96,36 @@ def create_stripe_checkout_session(booking):
         current_app.logger.error(f"Error creating Stripe session: {str(e)}")
         return None
 
-def send_booking_confirmation_email(booking):
-    """Send booking confirmation email to user"""
+def send_booking_confirmation_email(booking, mail_settings, app_domain):
+    """Send booking confirmation email to user or guest"""
     try:
+        # Configure mail settings for this send operation
+        current_app.config.update(
+            MAIL_SERVER=mail_settings['MAIL_SERVER'],
+            MAIL_PORT=mail_settings['MAIL_PORT'],
+            MAIL_USE_TLS=mail_settings['MAIL_USE_TLS'],
+            MAIL_USERNAME=mail_settings['MAIL_USERNAME'],
+            MAIL_PASSWORD=mail_settings['MAIL_PASSWORD'],
+            MAIL_DEFAULT_SENDER=mail_settings['MAIL_DEFAULT_SENDER']
+        )
+        mail.init_app(current_app)
+
+        # Handle both user bookings and guest bookings
+        if booking.user:
+            # Registered user booking
+            recipient_email = booking.user.email
+            guest_name = booking.user.get_full_name()
+        else:
+            # Guest booking
+            recipient_email = booking.email
+            guest_name = f"{booking.first_name} {booking.last_name}"
+
         msg = Message(
             subject='Booking Confirmation - Luxury Resort',
-            recipients=[booking.user.email],
+            recipients=[recipient_email],
             html=f"""
             <h2>Booking Confirmation</h2>
-            <p>Dear {booking.user.get_full_name()},</p>
+            <p>Dear {guest_name},</p>
             <p>Your booking has been confirmed! Here are the details:</p>
             <ul>
                 <li><strong>Booking ID:</strong> {booking.id}</li>
@@ -114,10 +146,20 @@ def send_booking_confirmation_email(booking):
         current_app.logger.error(f"Error sending confirmation email: {str(e)}")
         return False
 
-def send_contact_notification_email(contact_message):
+def send_contact_notification_email(contact_message, admin_email, mail_settings):
     """Send notification email for new contact message"""
     try:
-        admin_email = os.environ.get('ADMIN_EMAIL', 'admin@resort.com')
+        # Configure mail settings for this send operation
+        current_app.config.update(
+            MAIL_SERVER=mail_settings['MAIL_SERVER'],
+            MAIL_PORT=mail_settings['MAIL_PORT'],
+            MAIL_USE_TLS=mail_settings['MAIL_USE_TLS'],
+            MAIL_USERNAME=mail_settings['MAIL_USERNAME'],
+            MAIL_PASSWORD=mail_settings['MAIL_PASSWORD'],
+            MAIL_DEFAULT_SENDER=mail_settings['MAIL_DEFAULT_SENDER']
+        )
+        mail.init_app(current_app)
+        
         msg = Message(
             subject=f'New Contact Message: {contact_message.subject}',
             recipients=[admin_email],

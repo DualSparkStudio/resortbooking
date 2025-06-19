@@ -1,0 +1,1340 @@
+{% extends "base.html" %}
+
+{% block title %}{{ room_type.name }} - Booking Calendar{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+<style>
+:root {
+    --primary-blue: #2c5f7c;
+    --ocean-blue: #5085a5;
+    --sage-green: #87a96b;
+    --mint-green: #a8d5ba;
+    --seafoam: #c2e0d1;
+    --warm-terracotta: #c1502e;
+    --soft-amber: #d4a574;
+    --warm-white: #fdfcf8;
+    --cream-beige: #f5f3f0;
+    --text-dark: #2c3e35;
+    --primary-gradient: linear-gradient(135deg, #2c5f7c 0%, #4a7c95 50%, #87a96b 100%);
+    --nature-gradient: linear-gradient(135deg, #4a6741 0%, #87a96b 50%, #a8d5ba 100%);
+    --soft-shadow: 0 8px 25px rgba(44, 95, 124, 0.12);
+    --soft-shadow-hover: 0 15px 35px rgba(44, 95, 124, 0.18);
+}
+
+.calendar-container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: var(--soft-shadow);
+    padding: 0;
+    margin: 20px 0;
+    overflow: hidden;
+    border: 1px solid var(--seafoam);
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.calendar-container:hover {
+    box-shadow: var(--soft-shadow-hover);
+    transform: translateY(-5px);
+}
+
+.calendar-header {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 25px 30px;
+    margin: 0;
+    position: relative;
+}
+
+.calendar-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--warm-terracotta), var(--soft-amber), var(--sage-green), var(--ocean-blue));
+}
+
+.room-info-card {
+    background: linear-gradient(135deg, var(--warm-white) 0%, #ffffff 100%);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    border: 1px solid var(--seafoam);
+    box-shadow: var(--soft-shadow);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.room-info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--soft-shadow-hover);
+}
+
+.room-info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--nature-gradient);
+    box-shadow: 0 0 15px rgba(135, 169, 107, 0.3);
+}
+
+.legend {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--warm-white) 0%, #ffffff 100%);
+    border-radius: 15px;
+    border: 1px solid var(--seafoam);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9em;
+    font-weight: 600;
+    padding: 10px 15px;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 3px 8px rgba(44, 95, 124, 0.08);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    color: var(--text-dark);
+}
+
+.legend-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(44, 95, 124, 0.15);
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Enhanced Calendar Styling */
+.fc {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.fc-header-toolbar {
+    padding: 20px 30px;
+    background: var(--cream-beige);
+    border-bottom: 1px solid var(--seafoam);
+    margin-bottom: 0 !important;
+}
+
+.fc-button {
+    background: var(--primary-gradient) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 10px 18px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: var(--soft-shadow) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    font-size: 0.9em !important;
+}
+
+.fc-button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--soft-shadow-hover) !important;
+    filter: brightness(1.05) !important;
+}
+
+.fc-button:active {
+    transform: translateY(0) !important;
+    box-shadow: var(--soft-shadow) !important;
+}
+
+.fc-button:disabled {
+    opacity: 0.6 !important;
+    transform: none !important;
+}
+
+.fc-daygrid-day {
+    border: 1px solid var(--seafoam) !important;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.fc-daygrid-day:hover {
+    background-color: rgba(135, 169, 107, 0.05) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(44, 95, 124, 0.08);
+    z-index: 5;
+}
+
+.fc-daygrid-day-number {
+    font-weight: 700;
+    color: var(--text-dark);
+    padding: 10px;
+    font-size: 1.1em;
+    position: relative;
+}
+
+.fc-day-today .fc-daygrid-day-number:after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: var(--soft-amber);
+    border-radius: 50%;
+    top: 8px;
+    right: 8px;
+}
+
+/* Enhanced Available/Booked Day Styling */
+.fc-daygrid-day.available-day {
+    background: linear-gradient(135deg, rgba(168, 213, 186, 0.2) 0%, rgba(194, 224, 209, 0.15) 100%) !important;
+    border: 1px solid rgba(135, 169, 107, 0.3) !important;
+    position: relative;
+}
+
+.fc-daygrid-day.available-day:before {
+    content: '✓';
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    color: var(--sage-green);
+    font-weight: bold;
+    font-size: 14px;
+    z-index: 1;
+}
+
+.fc-daygrid-day.available-day:hover {
+    background: linear-gradient(135deg, rgba(168, 213, 186, 0.3) 0%, rgba(194, 224, 209, 0.25) 100%) !important;
+    border: 1px solid rgba(135, 169, 107, 0.5) !important;
+}
+
+.fc-daygrid-day.booked-day {
+    background: linear-gradient(135deg, rgba(193, 80, 46, 0.15) 0%, rgba(212, 165, 116, 0.1) 100%) !important;
+    border: 1px solid rgba(193, 80, 46, 0.3) !important;
+    position: relative;
+    pointer-events: auto;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+}
+
+.fc-daygrid-day.booked-day:before {
+    content: '✕';
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    color: var(--warm-terracotta);
+    font-weight: bold;
+    font-size: 14px;
+    z-index: 1;
+}
+
+.fc-daygrid-day.booked-day .fc-daygrid-day-number {
+    color: #6c757d !important;
+    text-decoration: line-through;
+}
+
+.fc-daygrid-day.booked-day:hover {
+    background: linear-gradient(135deg, rgba(193, 80, 46, 0.25) 0%, rgba(212, 165, 116, 0.2) 100%) !important;
+    border: 1px solid rgba(193, 80, 46, 0.5) !important;
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 0.8;
+}
+
+/* Partially available days */
+.fc-daygrid-day.partial-day {
+    background: linear-gradient(135deg, rgba(212, 165, 116, 0.2) 0%, rgba(229, 194, 159, 0.15) 100%) !important;
+    border: 1px solid rgba(212, 165, 116, 0.4) !important;
+    position: relative;
+}
+
+.fc-daygrid-day.partial-day:before {
+    content: '◐';
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    color: var(--soft-amber);
+    font-weight: bold;
+    font-size: 14px;
+    z-index: 1;
+}
+
+/* Booked days styling */
+.fc-event {
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 0.85em !important;
+    font-weight: 600 !important;
+    padding: 4px 8px !important;
+    margin: 2px !important;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15) !important;
+    transition: all 0.2s ease !important;
+}
+
+.fc-event:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2) !important;
+    z-index: 10 !important;
+}
+
+.fc-daygrid-event {
+    border-radius: 6px !important;
+    margin: 3px !important;
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%) !important;
+    border-left: 3px solid rgba(255,255,255,0.5) !important;
+}
+
+.fc-event-title {
+    font-weight: 700 !important;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.1) !important;
+    letter-spacing: 0.3px !important;
+}
+
+.availability-summary {
+    background: linear-gradient(135deg, #ffffff 0%, var(--warm-white) 100%);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: var(--soft-shadow);
+    margin-bottom: 20px;
+    border: 1px solid var(--seafoam);
+}
+
+.date-info-modal .modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(44, 95, 124, 0.2);
+}
+
+.date-info-modal .modal-header {
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 15px 15px 0 0;
+    border: none;
+}
+
+/* Ensure modal backdrop and modal work properly */
+#dateInfoModal {
+    z-index: 1055;
+}
+
+#dateInfoModal .modal-backdrop {
+    z-index: 1050;
+}
+
+/* Ensure modal can be dismissed by clicking outside */
+#dateInfoModal .modal-dialog {
+    pointer-events: none;
+}
+
+#dateInfoModal .modal-content {
+    pointer-events: auto;
+}
+
+/* Improve modal responsiveness */
+@media (max-width: 768px) {
+    #dateInfoModal .modal-dialog {
+        margin: 10px;
+        max-width: calc(100vw - 20px);
+    }
+}
+
+.room-status {
+    padding: 10px 15px;
+    border-radius: 25px;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin: 4px;
+    display: inline-block;
+    box-shadow: 0 2px 5px rgba(44, 95, 124, 0.1);
+}
+
+.room-available {
+    background: linear-gradient(135deg, var(--seafoam) 0%, var(--mint-green) 100%);
+    color: var(--text-dark);
+    border: 1px solid var(--mint-green);
+}
+
+.room-booked {
+    background: linear-gradient(135deg, rgba(193, 80, 46, 0.15) 0%, rgba(212, 165, 116, 0.2) 100%);
+    color: var(--warm-terracotta);
+    border: 1px solid rgba(193, 80, 46, 0.3);
+}
+
+.room-pending {
+    background: linear-gradient(135deg, rgba(212, 165, 116, 0.3) 0%, rgba(229, 194, 159, 0.3) 100%);
+    color: var(--text-dark);
+    border: 1px solid var(--soft-amber);
+}
+
+.resort-closed {
+    background: linear-gradient(135deg, rgba(193, 80, 46, 0.5) 0%, rgba(193, 80, 46, 0.6) 100%);
+    color: white;
+    border: 1px solid var(--warm-terracotta);
+}
+
+.fc-day-today {
+    background-color: rgba(212, 165, 116, 0.15) !important;
+    border: 2px solid var(--soft-amber) !important;
+}
+
+.fc-day-past {
+    background-color: rgba(108, 117, 125, 0.05) !important;
+    color: #6c757d !important;
+}
+
+.fc-day-past .fc-daygrid-day-number {
+    color: #adb5bd !important;
+}
+
+/* Date selection highlighting */
+.fc-highlight {
+    background: linear-gradient(135deg, rgba(52, 144, 220, 0.2) 0%, rgba(52, 144, 220, 0.15) 100%) !important;
+    border: 2px solid #3490dc !important;
+    border-radius: 8px !important;
+}
+
+.fc-day-selected {
+    background: linear-gradient(135deg, rgba(52, 144, 220, 0.3) 0%, rgba(52, 144, 220, 0.2) 100%) !important;
+    border: 2px solid #3490dc !important;
+    border-radius: 8px !important;
+}
+
+/* Selection range styling */
+.fc-select-range .fc-daygrid-day {
+    background: rgba(52, 144, 220, 0.1) !important;
+    border-color: #3490dc !important;
+}
+
+.booking-actions {
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 2px solid var(--seafoam);
+}
+
+.price-display {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: var(--warm-terracotta);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: var(--soft-shadow);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--soft-shadow-hover);
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--primary-blue);
+    color: var(--primary-blue);
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary-blue);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--soft-shadow);
+}
+
+/* Professional animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.calendar-container {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.room-info-card {
+    animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+.availability-summary {
+    animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-4">
+                <h1 class="luxury-title">{{ room_type.name }} - Booking Calendar</h1>
+                <p class="lead text-muted">Select your preferred dates and view real-time availability</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="room-info-card">
+                <h4 class="luxury-title mb-3">Room Information</h4>
+                {% set primary_image = room_type.get_primary_image() %}
+                {% if primary_image %}
+                    <img src="{{ primary_image }}" alt="{{ room_type.name }}" 
+                         class="img-fluid rounded mb-3" style="height: 200px; object-fit: cover; width: 100%;">
+                {% endif %}
+                <div class="price-display mb-3">{{ format_currency(room_type.price_per_night) }} / night</div>
+                <p><strong>Max occupancy:</strong> {{ room_type.max_occupancy }} guests</p>
+                <p><strong>Description:</strong></p>
+                <p class="text-muted">{{ room_type.description }}</p>
+                
+                <!-- Selected Dates Display - moved here to be right below description -->
+                <div id="selectedDatesInfo" style="display: none;" class="mb-4">
+                    <div class="card" style="background: linear-gradient(135deg, rgba(42, 102, 145, 0.1) 0%, rgba(168, 213, 186, 0.1) 100%); border: 1px solid rgba(42, 102, 145, 0.2);">
+                        <div class="card-body">
+                            <h6 class="card-title mb-3">
+                                <i class="fas fa-calendar-check me-2 text-primary"></i>
+                                Selected Dates
+                            </h6>
+                            <div id="selectedDatesDisplay"></div>
+                            <div id="bookingSummary" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="booking-instructions mb-3">
+                    <h6 class="mb-2">How to Book:</h6>
+                    <div class="small text-muted">
+                        <div class="mb-1">
+                            <i class="fas fa-mouse-pointer me-2 text-primary"></i>
+                            <strong>1st click:</strong> Select check-in date
+                        </div>
+                        <div class="mb-1">
+                            <i class="fas fa-mouse-pointer me-2 text-success"></i>
+                            <strong>2nd click:</strong> Select check-out date (can be same day)
+                        </div>
+                        <div class="mb-1">
+                            <i class="fas fa-redo me-2 text-warning"></i>
+                            <strong>3rd click:</strong> Reset and start over
+                        </div>
+                        <div class="mb-1">
+                            <i class="fas fa-info-circle me-2 text-info"></i>
+                            <strong>Tip:</strong> You can check-in on checkout dates
+                        </div>
+                    </div>
+                </div>
+
+                <div class="booking-actions">
+                    <button id="selectDatesBtn" class="btn btn-primary w-100 mb-2" disabled>
+                        <i class="fas fa-calendar-plus me-2"></i>Select Dates to Book
+                    </button>
+                    <a href="{{ url_for('room_detail', room_type_id=room_type.id) }}" 
+                       class="btn btn-outline-primary w-100">
+                        <i class="fas fa-info-circle me-2"></i>Room Details
+                    </a>
+                </div>
+            </div>
+
+            <div class="availability-summary">
+                <h5 class="mb-3">Calendar Legend</h5>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, rgba(168, 213, 186, 0.2) 0%, rgba(194, 224, 209, 0.15) 100%);"></div>
+                        <span>✓ Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, rgba(193, 80, 46, 0.15) 0%, rgba(212, 165, 116, 0.1) 100%);"></div>
+                        <span>✕ Fully Booked</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, rgba(212, 165, 116, 0.2) 0%, rgba(229, 194, 159, 0.15) 100%);"></div>
+                        <span>◐ Partially Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, rgba(212, 165, 116, 0.15) 0%, rgba(212, 165, 116, 0.2) 100%);"></div>
+                        <span>Today</span>
+                    </div>
+                </div>
+                
+
+                
+                <!-- Debug info - remove this later -->
+                <div id="debugInfo" class="mt-3" style="font-size: 0.8em; color: #666; background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                    <strong>Debug:</strong> Click on available dates to test selection
+                    <br>
+                    <button onclick="clearDateSelection()" class="btn btn-sm btn-outline-secondary mt-2">
+                        <i class="fas fa-undo"></i> Reset Selection
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Interactive Booking Calendar
+                    </h3>
+                    <p class="mb-0 opacity-75">Click on any available date to start your booking or view detailed information</p>
+                </div>
+                
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Date Information Modal -->
+<div class="modal fade" id="dateInfoModal" tabindex="-1" aria-labelledby="dateInfoModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dateInfoModalLabel">Date Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="dateInfoContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="modalCloseBtn">Close</button>
+                <button type="button" class="btn btn-primary" id="bookFromModal" style="display: none;">Book This Date</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var selectedStartDate = null;
+    var selectedEndDate = null;
+    
+    // Initialize with stored dates from global manager
+    if (window.DateSelectionManager) {
+        selectedStartDate = DateSelectionManager.getCheckInDate();
+        selectedEndDate = DateSelectionManager.getCheckOutDate();
+        
+        // Set current room type in storage
+        DateSelectionManager.setRoomTypeId({{ room_type.id }});
+    }
+    
+    // Function to show booking unavailable message
+    function showBookingUnavailableMessage(bookedDates) {
+        var content = '<div class="alert alert-warning text-center">';
+        content += '<i class="fas fa-exclamation-triangle fa-2x mb-3 text-warning"></i>';
+        content += '<h5>Sorry, No Rooms Available</h5>';
+        content += '<p class="mb-3">All rooms are fully booked for the selected date(s). Please choose different dates.</p>';
+        
+        if (bookedDates.length > 0) {
+            content += '<p><strong>Unavailable dates:</strong></p>';
+            content += '<ul class="list-unstyled">';
+            bookedDates.forEach(function(date) {
+                content += '<li><i class="fas fa-times-circle text-danger me-2"></i>' + date + '</li>';
+            });
+            content += '</ul>';
+        }
+        
+        content += '<div class="mt-3">';
+        content += '<p class="small text-muted">Try selecting different dates or check our other room types.</p>';
+        content += '</div>';
+        content += '</div>';
+        
+        document.getElementById('dateInfoContent').innerHTML = content;
+        document.getElementById('bookFromModal').style.display = 'none';
+        
+        var modalElement = document.getElementById('dateInfoModal');
+        var modal = new bootstrap.Modal(modalElement, {
+            backdrop: true,  // Allow clicking outside to close
+            keyboard: true,  // Allow ESC key to close
+            focus: true      // Focus modal when shown
+        });
+        
+        // Ensure modal can be dismissed properly
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            // Clean up any modal-related issues
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('padding-right');
+            
+            // Remove any remaining backdrop
+            var backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(function(backdrop) {
+                backdrop.remove();
+            });
+        }, { once: true });
+        
+        modal.show();
+    }
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,listMonth'
+        },
+        height: 'auto',
+        selectable: true,
+        selectMirror: true,
+        selectOverlap: true,
+        selectConstraint: {
+            start: new Date().toISOString().split('T')[0] // Can't select past dates
+        },
+        selectAllow: function(selectInfo) {
+            // Allow all selections - we'll handle availability in dateClick
+            return true;
+        },
+        events: {{ calendar_data | tojson }},
+        eventDisplay: 'block',
+        dayMaxEvents: 3,
+        
+        select: function(info) {
+            // Allow programmatic selection but prevent user drag selection
+            return true;
+        },
+        
+        unselect: function(info) {
+            // Don't automatically reset our selection variables
+            // We manage them manually in handleDateSelection
+            console.log('Calendar unselect triggered - ignoring to preserve our selection');
+            
+            // Clear from global manager only if we actually want to clear
+            // if (window.DateSelectionManager) {
+            //     DateSelectionManager.clearDates();
+            // }
+        },
+        
+        dateClick: function(info) {
+            console.log('dateClick called for:', info.dateStr);
+            
+            var clickedDate = new Date(info.date);
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (clickedDate < today) {
+                console.log('Date is in the past, showing info modal');
+                showDateInfo(info.dateStr, 'This date is in the past and cannot be booked.');
+                return;
+            }
+            
+            console.log('Fetching availability for:', info.dateStr);
+            
+            // First verify availability via API before allowing selection
+            fetch('/api/date-info/{{ room_type.id }}/' + info.dateStr)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('API response for', info.dateStr, ':', data);
+                    
+                    if (data.resort_closed) {
+                        console.log('Resort closed, showing info modal');
+                        showDateInfo(info.dateStr, 'Resort is closed on this date: ' + data.closure_reason);
+                        return;
+                    }
+                    
+                    if (data.available_rooms === 0) {
+                        console.log('No rooms available, showing unavailable message');
+                        showBookingUnavailableMessage([clickedDate.toDateString()]);
+                        return;
+                    }
+                    
+                    console.log('Date is available, proceeding with selection');
+                    // Date is available - proceed with selection logic
+                    handleDateSelection(clickedDate, info.dateStr);
+                })
+                .catch(error => {
+                    console.error('Error checking date availability:', error);
+                    // If API fails, still allow selection
+                    handleDateSelection(clickedDate, info.dateStr);
+                });
+        },
+        
+        eventClick: function(info) {
+            // Prevent event propagation to avoid interfering with date selection
+            info.jsEvent.stopPropagation();
+            
+            var eventDetails = info.event.extendedProps;
+            var content = '<h6>' + info.event.title + '</h6>';
+            
+            if (eventDetails.type === 'booking') {
+                content += '<div class="alert alert-info">';
+                content += '<i class="fas fa-info-circle me-2"></i>';
+                content += 'This date is booked. Customer details are kept private for security reasons.';
+                content += '</div>';
+                content += '<p><strong>Status:</strong> <span class="badge bg-danger">Booked</span></p>';
+                content += '<p><strong>Check-in:</strong> ' + info.event.start.toDateString() + '</p>';
+                content += '<p><strong>Check-out:</strong> ' + info.event.end.toDateString() + '</p>';
+                
+                content += '<div class="mt-3">';
+                content += '<div class="alert alert-info">';
+                content += '<i class="fas fa-info-circle me-2"></i>';
+                content += '<strong>Note:</strong> You can check-in on the checkout date of existing bookings.';
+                content += '</div>';
+                content += '<p class="small text-muted">This room is occupied during the selected period. Please select different dates or check if the checkout date is available for your check-in.</p>';
+                content += '</div>';
+            } else if (eventDetails.type === 'closure') {
+                content += '<div class="alert alert-warning">';
+                content += '<i class="fas fa-exclamation-triangle me-2"></i>';
+                content += '<strong>Resort Closed</strong>';
+                content += '</div>';
+                content += '<p><strong>Reason:</strong> ' + eventDetails.reason + '</p>';
+                if (eventDetails.description) {
+                    content += '<p><strong>Details:</strong> ' + eventDetails.description + '</p>';
+                }
+                
+                content += '<div class="mt-3">';
+                content += '<p class="small text-muted">The resort is closed during this period. Please select alternative dates.</p>';
+                content += '</div>';
+            }
+            
+            showDateInfo(info.event.start.toISOString().split('T')[0], content);
+        },
+        
+        dayCellDidMount: function(info) {
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (info.date < today) {
+                info.el.classList.add('fc-day-past');
+            } else {
+                // Check room availability for this date
+                var dateStr = info.date.toISOString().split('T')[0];
+                
+                // Check for resort closure first
+                var hasResortClosure = false;
+                var bookingCount = 0;
+                var events = calendar.getEvents();
+                
+                for (var i = 0; i < events.length; i++) {
+                    var event = events[i];
+                    var eventStart = new Date(event.start);
+                    var eventEnd = new Date(event.end);
+                    eventStart.setHours(0, 0, 0, 0);
+                    eventEnd.setHours(0, 0, 0, 0);
+                    
+                    // For bookings: exclude checkout dates (guests check out, so room is available)
+                    // For closures: include the full date range
+                    if (event.extendedProps.type === 'booking') {
+                        // Booking blocks dates from check-in (inclusive) to check-out (exclusive)
+                        if (info.date >= eventStart && info.date < eventEnd) {
+                            bookingCount++;
+                        }
+                    } else if (event.extendedProps.type === 'closure') {
+                        // Resort closures block the full date range (inclusive)
+                        if (info.date >= eventStart && info.date <= eventEnd) {
+                            hasResortClosure = true;
+                        }
+                    }
+                }
+                
+                // Apply appropriate styling based on availability
+                if (hasResortClosure) {
+                    // Resort closed - no special day styling, events will show
+                } else {
+                    // Fetch actual availability data for better accuracy
+                    fetch('/api/date-info/{{ room_type.id }}/' + dateStr)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.resort_closed) {
+                                var totalRooms = data.total_rooms;
+                                var availableRooms = data.available_rooms;
+                                
+                                if (availableRooms === 0) {
+                                    info.el.classList.add('booked-day');
+                                } else if (availableRooms < totalRooms) {
+                                    info.el.classList.add('partial-day');
+                                } else {
+                                    info.el.classList.add('available-day');
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.log('Could not fetch availability for ' + dateStr + ', using fallback');
+                            // Fallback to simple booking count logic
+                            if (bookingCount > 0) {
+                                info.el.classList.add('booked-day');
+                            } else {
+                                info.el.classList.add('available-day');
+                            }
+                        });
+                }
+            }
+        },
+        
+        eventDidMount: function(info) {
+            var eventProps = info.event.extendedProps;
+            var tooltip = info.event.title;
+            
+            if (eventProps.type === 'booking') {
+                tooltip += ' - ' + eventProps.status;
+            }
+            
+            info.el.setAttribute('title', tooltip);
+        }
+    });
+    
+    calendar.render();
+    
+    // Show stored selection when calendar loads
+    if (selectedStartDate && selectedEndDate) {
+        updateSelectedDates();
+        calendar.select(selectedStartDate, selectedEndDate);
+    } else if (selectedStartDate) {
+        updateSelectedDates();
+        calendar.select(selectedStartDate, new Date(selectedStartDate.getTime() + 86400000));
+    }
+    
+    // Function to update available day styling
+    function updateAvailableDays() {
+        setTimeout(function() {
+            var allDays = document.querySelectorAll('.fc-daygrid-day');
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            allDays.forEach(function(dayEl) {
+                var dateStr = dayEl.getAttribute('data-date');
+                if (dateStr) {
+                    var dayDate = new Date(dateStr);
+                    dayDate.setHours(0, 0, 0, 0);
+                    
+                    // Reset classes
+                    dayEl.classList.remove('available-day', 'booked-day', 'partial-day');
+                    
+                    // Only process future dates
+                    if (dayDate >= today) {
+                        var bookingCount = 0;
+                        var hasResortClosure = false;
+                        var events = calendar.getEvents();
+                        
+                        for (var i = 0; i < events.length; i++) {
+                            var event = events[i];
+                            var eventStart = new Date(event.start);
+                            var eventEnd = new Date(event.end);
+                            eventStart.setHours(0, 0, 0, 0);
+                            eventEnd.setHours(0, 0, 0, 0);
+                            
+                            // For bookings: exclude checkout dates (guests check out, so room is available)
+                            // For closures: include the full date range
+                            if (event.extendedProps.type === 'booking') {
+                                // Booking blocks dates from check-in (inclusive) to check-out (exclusive)
+                                if (dayDate >= eventStart && dayDate < eventEnd) {
+                                    bookingCount++;
+                                }
+                            } else if (event.extendedProps.type === 'closure') {
+                                // Resort closures block the full date range (inclusive)
+                                if (dayDate >= eventStart && dayDate <= eventEnd) {
+                                    hasResortClosure = true;
+                                }
+                            }
+                        }
+                        
+                        // Apply appropriate styling
+                        if (hasResortClosure) {
+                            // Resort closed - no special day styling, events will show
+                        } else {
+                            // Fetch availability data for accurate display
+                            fetch('/api/date-info/{{ room_type.id }}/' + dateStr)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (!data.resort_closed) {
+                                        var totalRooms = data.total_rooms;
+                                        var availableRooms = data.available_rooms;
+                                        
+                                        if (availableRooms === 0) {
+                                            dayEl.classList.add('booked-day');
+                                        } else if (availableRooms < totalRooms) {
+                                            dayEl.classList.add('partial-day');
+                                        } else {
+                                            dayEl.classList.add('available-day');
+                                        }
+                                    }
+                                })
+                                .catch(error => {
+                                    // Fallback to simple booking count logic
+                                    if (bookingCount > 0) {
+                                        dayEl.classList.add('booked-day');
+                                    } else {
+                                        dayEl.classList.add('available-day');
+                                    }
+                                });
+                        }
+                    }
+                }
+            });
+        }, 100);
+    }
+    
+    // Update available days after calendar renders
+    updateAvailableDays();
+    
+    // Update available days when view changes
+    calendar.on('datesSet', function() {
+        updateAvailableDays();
+    });
+    
+    // Handle independent date selection
+    function handleDateSelection(clickedDate, dateStr) {
+        console.log('handleDateSelection called:', dateStr, 'Current state:', selectedStartDate, selectedEndDate);
+        console.log('Conditions: !selectedStartDate =', !selectedStartDate, ', !selectedEndDate =', !selectedEndDate);
+        
+        try {
+            // Validate the clicked date
+            var validClickedDate = new Date(clickedDate);
+            if (isNaN(validClickedDate.getTime())) {
+                console.error('Invalid date clicked:', clickedDate);
+                return;
+            }
+            
+            if (!selectedStartDate) {
+                // First click - set as check-in date
+                console.log('Condition 1: First click - no check-in date set');
+                selectedStartDate = new Date(validClickedDate);
+                selectedEndDate = null;
+                
+                console.log('First click - set check-in date:', selectedStartDate);
+                
+                // Store in global manager
+                if (window.DateSelectionManager) {
+                    DateSelectionManager.setCheckInDate(selectedStartDate);
+                    DateSelectionManager.setCheckOutDate(null);
+                    DateSelectionManager.setRoomTypeId({{ room_type.id }});
+                }
+                
+                updateSelectedDates();
+                updateDebugInfo();
+                
+                // Highlight just the check-in date
+                calendar.unselect();
+                setTimeout(function() {
+                    if (selectedStartDate) {
+                        calendar.select(selectedStartDate, new Date(selectedStartDate.getTime() + 86400000));
+                    }
+                }, 50);
+                
+            } else if (!selectedEndDate) {
+                // Second click - set as check-out date (can be same date or any future date)
+                console.log('Condition 2: Second click - check-in set, no check-out');
+                selectedEndDate = new Date(validClickedDate);
+                
+                console.log('Second click - attempting to set check-out date:', selectedEndDate);
+                
+                // Allow checkout on same day or any future date
+                if (selectedEndDate < selectedStartDate) {
+                    // If earlier date clicked, treat as new check-in date
+                    console.log('Earlier date clicked, resetting to new check-in');
+                    selectedStartDate = new Date(validClickedDate);
+                    selectedEndDate = null;
+                    
+                    if (window.DateSelectionManager) {
+                        DateSelectionManager.setCheckInDate(selectedStartDate);
+                        DateSelectionManager.setCheckOutDate(null);
+                    }
+                    
+                    updateSelectedDates();
+                    updateDebugInfo();
+                    calendar.unselect();
+                    setTimeout(function() {
+                        if (selectedStartDate) {
+                            calendar.select(selectedStartDate, new Date(selectedStartDate.getTime() + 86400000));
+                        }
+                    }, 50);
+                } else {
+                    // Valid checkout date
+                    console.log('Valid checkout date selected');
+                    if (window.DateSelectionManager) {
+                        DateSelectionManager.setDates(selectedStartDate, selectedEndDate, {{ room_type.id }});
+                    }
+                    
+                    updateSelectedDates();
+                    updateDebugInfo();
+                    
+                    // Highlight the full date range
+                    calendar.unselect();
+                    setTimeout(function() {
+                        if (selectedStartDate && selectedEndDate) {
+                            if (selectedStartDate.getTime() === selectedEndDate.getTime()) {
+                                // Same day booking
+                                calendar.select(selectedStartDate, new Date(selectedStartDate.getTime() + 86400000));
+                            } else {
+                                // Multi-day booking
+                                calendar.select(selectedStartDate, new Date(selectedEndDate.getTime() + 86400000));
+                            }
+                        }
+                    }, 50);
+                }
+                
+            } else {
+                // Third click - reset and start over with new check-in date
+                console.log('Condition 3: Third click - both dates set, resetting');
+                selectedStartDate = new Date(validClickedDate);
+                selectedEndDate = null;
+                
+                if (window.DateSelectionManager) {
+                    DateSelectionManager.setCheckInDate(selectedStartDate);
+                    DateSelectionManager.setCheckOutDate(null);
+                }
+                
+                updateSelectedDates();
+                updateDebugInfo();
+                calendar.unselect();
+                setTimeout(function() {
+                    if (selectedStartDate) {
+                        calendar.select(selectedStartDate, new Date(selectedStartDate.getTime() + 86400000));
+                    }
+                }, 50);
+            }
+        } catch (error) {
+            console.error('Error in handleDateSelection:', error);
+            // Reset selection on error
+            selectedStartDate = null;
+            selectedEndDate = null;
+            updateSelectedDates();
+            updateDebugInfo();
+        }
+    }
+    
+    function updateDebugInfo() {
+        var debugEl = document.getElementById('debugInfo');
+        if (debugEl) {
+            var info = 'No dates selected';
+            try {
+                if (selectedStartDate && selectedEndDate && 
+                    !isNaN(selectedStartDate.getTime()) && !isNaN(selectedEndDate.getTime())) {
+                    info = 'Check-in: ' + selectedStartDate.toDateString() + ', Check-out: ' + selectedEndDate.toDateString();
+                } else if (selectedStartDate && !isNaN(selectedStartDate.getTime())) {
+                    info = 'Check-in: ' + selectedStartDate.toDateString() + ' (click another date for check-out)';
+                }
+            } catch (error) {
+                console.error('Error in updateDebugInfo:', error);
+                info = 'Error displaying dates';
+            }
+            debugEl.innerHTML = '<strong>Debug:</strong> ' + info;
+        }
+    }
+    
+    function updateSelectedDates() {
+        var selectedDatesInfo = document.getElementById('selectedDatesInfo');
+        var selectedDatesDisplay = document.getElementById('selectedDatesDisplay');
+        var bookingSummary = document.getElementById('bookingSummary');
+        var selectDatesBtn = document.getElementById('selectDatesBtn');
+        
+        if (selectedStartDate && selectedEndDate) {
+            var startStr = selectedStartDate.toDateString();
+            var endStr = selectedEndDate.toDateString();
+            var daysDiff = Math.ceil((selectedEndDate - selectedStartDate) / (1000 * 60 * 60 * 24));
+            var nights = daysDiff === 0 ? 1 : daysDiff; // Same day = 1 night, different days = difference
+            
+            selectedDatesDisplay.innerHTML = 
+                '<p><strong>Check-in:</strong> ' + startStr + '</p>' +
+                '<p><strong>Check-out:</strong> ' + endStr + '</p>' +
+                '<p><strong>Nights:</strong> ' + nights + '</p>';
+            
+            var totalCost = nights * {{ room_type.price_per_night }};
+            bookingSummary.innerHTML = 
+                '<div class="alert alert-info">' +
+                '<strong>Total Cost:</strong> $' + totalCost.toFixed(2) +
+                '</div>';
+            
+            selectedDatesInfo.style.display = 'block';
+            selectDatesBtn.disabled = false;
+            selectDatesBtn.textContent = 'Proceed to Booking';
+            selectDatesBtn.onclick = function() {
+                proceedToBooking();
+            };
+        } else if (selectedStartDate && !selectedEndDate) {
+            // Show partial selection
+            var startStr = selectedStartDate.toDateString();
+            
+            selectedDatesDisplay.innerHTML = 
+                '<p><strong>Check-in:</strong> ' + startStr + '</p>' +
+                '<p class="text-muted"><em>Click another date to select check-out, or proceed with same-day checkout</em></p>';
+            
+            var oneDayCost = {{ room_type.price_per_night }};
+            bookingSummary.innerHTML = 
+                '<div class="alert alert-info">' +
+                '<i class="fas fa-info-circle me-2"></i>' +
+                'Same-day booking: $' + oneDayCost.toFixed(2) + ' (1 night)' +
+                '</div>';
+            
+            selectedDatesInfo.style.display = 'block';
+            selectDatesBtn.disabled = false;
+            selectDatesBtn.textContent = 'Proceed to Booking (Same Day)';
+            selectDatesBtn.onclick = function() {
+                proceedToBooking();
+            };
+        } else {
+            selectedDatesInfo.style.display = 'none';
+            selectDatesBtn.disabled = true;
+            selectDatesBtn.textContent = 'Select Dates to Book';
+        }
+    }
+    
+    function loadDateInfo(dateStr) {
+        fetch('/api/date-info/' + {{ room_type.id }} + '/' + dateStr)
+            .then(response => response.json())
+            .then(data => {
+                var content = '<h6>Date: ' + new Date(dateStr).toDateString() + '</h6>';
+                
+                if (data.resort_closed) {
+                    content += '<div class="alert alert-warning">';
+                    content += '<strong>Resort Closed:</strong> ' + data.closure_reason;
+                    if (data.closure_description) {
+                        content += '<br><small>' + data.closure_description + '</small>';
+                    }
+                    content += '</div>';
+                } else {
+                    content += '<div class="row">';
+                    content += '<div class="col-md-6">';
+                    content += '<h6>Room Availability</h6>';
+                    content += '<div class="room-status room-available">Available: ' + data.available_rooms + '</div>';
+                    content += '<div class="room-status room-booked">Booked: ' + data.booked_rooms + '</div>';
+                    content += '<div class="room-status room-pending">Pending: ' + data.pending_rooms + '</div>';
+                    content += '</div>';
+                    content += '<div class="col-md-6">';
+                    content += '<h6>Pricing</h6>';
+                    content += '<p><strong>Rate:</strong> $' + data.price_per_night + ' / night</p>';
+                    if (data.special_rate) {
+                        content += '<p class="text-success"><strong>Special Rate:</strong> $' + data.special_rate + ' / night</p>';
+                    }
+                    content += '</div>';
+                    content += '</div>';
+                    
+                    if (data.available_rooms > 0) {
+                        content += '<div class="alert alert-success mt-3">';
+                        content += '<i class="fas fa-check-circle me-2"></i>';
+                        content += '<strong>✅ Available!</strong> This date is available for booking.';
+                        content += '</div>';
+                        
+                        document.getElementById('bookFromModal').style.display = 'inline-block';
+                        document.getElementById('bookFromModal').onclick = function() {
+                            window.location.href = "{{ url_for('book_room', room_type_id=room_type.id) }}" + 
+                                                 '?check_in=' + dateStr;
+                        };
+                    } else {
+                        content += '<div class="alert alert-warning mt-3">';
+                        content += '<i class="fas fa-exclamation-triangle me-2"></i>';
+                        content += '<strong>No rooms available</strong> for this specific date. ';
+                        content += 'However, you may still be able to check-in on checkout dates of existing bookings.';
+                        content += '</div>';
+                        
+                        document.getElementById('bookFromModal').style.display = 'none';
+                    }
+                }
+                
+                showDateInfo(dateStr, content);
+            })
+            .catch(error => {
+                console.error('Error loading date info:', error);
+                showDateInfo(dateStr, 'Error loading date information.');
+            });
+    }
+    
+    function showDateInfo(dateStr, content) {
+        document.getElementById('dateInfoContent').innerHTML = content;
+        var modalElement = document.getElementById('dateInfoModal');
+        var modal = new bootstrap.Modal(modalElement, {
+            backdrop: true,  // Allow clicking outside to close
+            keyboard: true,  // Allow ESC key to close
+            focus: true      // Focus modal when shown
+        });
+        
+        // Ensure modal can be dismissed properly
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            // Clean up any modal-related issues
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('padding-right');
+            
+            // Remove any remaining backdrop
+            var backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(function(backdrop) {
+                backdrop.remove();
+            });
+        }, { once: true });
+        
+        // Add explicit close button handler
+        var closeBtn = document.getElementById('modalCloseBtn');
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                modal.hide();
+            };
+        }
+        
+        modal.show();
+    }
+    
+    function proceedToBooking() {
+        console.log('proceedToBooking called with:', selectedStartDate, selectedEndDate);
+        
+        if (selectedStartDate && selectedEndDate) {
+            // Use local date formatting to avoid timezone issues
+            var checkInStr = formatDateForForm(selectedStartDate);
+            var checkOutStr = formatDateForForm(selectedEndDate);
+            
+            console.log('Formatted dates - Check-in:', checkInStr, 'Check-out:', checkOutStr);
+            
+            window.location.href = "{{ url_for('book_room', room_type_id=room_type.id) }}" + 
+                                 '?check_in=' + checkInStr + '&check_out=' + checkOutStr;
+        } else if (selectedStartDate && !selectedEndDate) {
+            // If only check-in date is selected, use same date for check-out
+            var checkInStr = formatDateForForm(selectedStartDate);
+            
+            console.log('Same day booking - Check-in/out:', checkInStr);
+            
+            window.location.href = "{{ url_for('book_room', room_type_id=room_type.id) }}" + 
+                                 '?check_in=' + checkInStr + '&check_out=' + checkInStr;
+        }
+    }
+    
+    function formatDateForForm(date) {
+        // Format date as YYYY-MM-DD without timezone conversion
+        var year = date.getFullYear();
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+        var day = String(date.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+    }
+
+    function clearDateSelection() {
+        console.log('Manually clearing date selection');
+        selectedStartDate = null;
+        selectedEndDate = null;
+        calendar.unselect();
+        updateSelectedDates();
+        updateDebugInfo();
+        
+        // Clear from global manager
+        if (window.DateSelectionManager) {
+            DateSelectionManager.clearDates();
+        }
+    }
+});
+</script>
+{% endblock %} 

@@ -69,13 +69,13 @@
 </section>
 
 <!-- Quick Booking Section -->
-<section class="py-5 bg-light">
+<section class="py-5 bg-cream-beige">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="card shadow-lg border-0 rounded-4">
                     <div class="card-body p-4">
-                        <h3 class="text-center mb-4">Quick Room Search</h3>
+                        <h3 class="text-center mb-4 text-forest">Quick Room Search</h3>
                         <form class="row g-3 align-items-end">
                             <div class="col-md-3">
                                 <label for="checkIn" class="form-label">Check-in</label>
@@ -164,11 +164,11 @@
 </section>
 
 <!-- Featured Rooms Section -->
-<section class="py-5 bg-light">
+<section class="py-5 bg-seafoam">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="luxury-title">Featured Accommodations</h2>
-            <p class="lead text-muted">Discover our most popular luxury rooms and suites</p>
+            <h2 class="luxury-title text-forest">Featured Accommodations</h2>
+            <p class="lead text-sage">Discover our most popular luxury rooms and suites</p>
         </div>
         
         <div class="row">
@@ -176,7 +176,7 @@
             <div class="col-lg-4 mb-4">
                 <div class="card h-100 border-0 shadow-lg room-card">
                     <div class="room-image-container">
-                        <img src="{{ room_type.image_url or 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}" 
+                        <img src="{{ room_type.get_primary_image() or 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}" 
                              class="card-img-top room-image" alt="{{ room_type.name }}">
                         <div class="room-price-badge">
                             <span class="room-price">{{ format_currency(room_type.price_per_night) }}</span>
@@ -206,6 +206,46 @@
         
         <div class="text-center mt-4">
             <a href="{{ url_for('rooms') }}" class="btn btn-outline-primary btn-lg">View All Rooms</a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="luxury-title">Exclusive Features</h2>
+            <p class="lead text-muted">Experience luxury with our innovative booking system</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="text-center feature-item">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-calendar-alt fa-3x text-primary"></i>
+                    </div>
+                    <h5>Interactive Calendar</h5>
+                    <p class="text-muted">View real-time room availability, resort closures, and detailed information for each date. Our dynamic calendar provides complete transparency for your booking decisions.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="text-center feature-item">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-clock fa-3x text-success"></i>
+                    </div>
+                    <h5>Real-Time Updates</h5>
+                    <p class="text-muted">Get instant updates on room availability, pricing, and resort status. Never miss out on your preferred dates with our live booking system.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="text-center feature-item">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-info-circle fa-3x text-warning"></i>
+                    </div>
+                    <h5>Detailed Information</h5>
+                    <p class="text-muted">Access comprehensive details about each date including room availability, special rates, and resort closure information before making your booking.</p>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -298,6 +338,34 @@ $(document).ready(function() {
     const today = new Date().toISOString().split('T')[0];
     $('#checkIn').attr('min', today);
     
+    // Initialize with global date manager
+    if (window.DateSelectionManager) {
+        // Load stored dates into quick search form
+        if (DateSelectionManager.getFormattedCheckIn()) {
+            $('#checkIn').val(DateSelectionManager.getFormattedCheckIn());
+        }
+        if (DateSelectionManager.getFormattedCheckOut()) {
+            $('#checkOut').val(DateSelectionManager.getFormattedCheckOut());
+        }
+        
+        // Add listeners to update global storage when form changes
+        $('#checkIn').on('change', function() {
+            if (this.value) {
+                DateSelectionManager.setCheckInDate(new Date(this.value));
+            } else {
+                DateSelectionManager.setCheckInDate(null);
+            }
+        });
+        
+        $('#checkOut').on('change', function() {
+            if (this.value) {
+                DateSelectionManager.setCheckOutDate(new Date(this.value));
+            } else {
+                DateSelectionManager.setCheckOutDate(null);
+            }
+        });
+    }
+    
     // Update check-out minimum date when check-in changes
     $('#checkIn').change(function() {
         const checkInDate = new Date(this.value);
@@ -313,12 +381,37 @@ $(document).ready(function() {
     // Handle quick search form
     $('form').submit(function(e) {
         e.preventDefault();
+        const checkIn = $('#checkIn').val();
+        const checkOut = $('#checkOut').val();
+        const guests = $('#guests').val();
         const roomType = $('#roomType').val();
-        if (roomType) {
-            window.location.href = "{{ url_for('book_room', room_type_id=1) }}".replace('1', roomType);
-        } else {
-            window.location.href = "{{ url_for('rooms') }}";
+        
+        // Store selected dates in global manager
+        if (window.DateSelectionManager) {
+            if (checkIn) DateSelectionManager.setCheckInDate(new Date(checkIn));
+            if (checkOut) DateSelectionManager.setCheckOutDate(new Date(checkOut));
+            if (roomType) DateSelectionManager.setRoomTypeId(roomType);
         }
+        
+        // Build URL with parameters
+        let targetUrl;
+        if (roomType) {
+            targetUrl = "{{ url_for('book_room', room_type_id=1) }}".replace('1', roomType);
+        } else {
+            targetUrl = "{{ url_for('rooms') }}";
+        }
+        
+        // Add URL parameters for compatibility
+        const params = new URLSearchParams();
+        if (checkIn) params.append('check_in', checkIn);
+        if (checkOut) params.append('check_out', checkOut);
+        if (guests) params.append('guests', guests);
+        
+        if (params.toString()) {
+            targetUrl += '?' + params.toString();
+        }
+        
+        window.location.href = targetUrl;
     });
 });
 </script>

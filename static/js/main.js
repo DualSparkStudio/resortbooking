@@ -79,14 +79,63 @@
             }
         });
 
-        // Navbar background on scroll
+        // Enhanced navbar background on scroll with smooth transitions
+        var lastScrollTop = 0;
+        var navbar = $('.luxury-nav');
+        
         $(window).scroll(function() {
-            if ($(this).scrollTop() > 50) {
-                $('.luxury-nav').addClass('scrolled');
+            var scrollTop = $(this).scrollTop();
+            
+            // Add/remove scrolled class for styling
+            if (scrollTop > 50) {
+                navbar.addClass('scrolled');
             } else {
-                $('.luxury-nav').removeClass('scrolled');
+                navbar.removeClass('scrolled');
+            }
+            
+            // Hide/show navbar on scroll direction (optional enhancement)
+            if (scrollTop > lastScrollTop && scrollTop > 200) {
+                // Scrolling down - hide navbar
+                navbar.addClass('navbar-hidden');
+            } else {
+                // Scrolling up - show navbar
+                navbar.removeClass('navbar-hidden');
+            }
+            
+            lastScrollTop = scrollTop;
+        });
+
+        // Smooth scroll for anchor links
+        $('a[href^="#"]').on('click', function(e) {
+            var target = $(this.getAttribute('href'));
+            if (target.length) {
+                e.preventDefault();
+                $('html, body').stop().animate({
+                    scrollTop: target.offset().top - navbar.outerHeight()
+                }, 800, 'easeInOutQuart');
             }
         });
+
+        // Add parallax effect to hero section
+        if ($('.hero-section').length) {
+            $(window).scroll(function() {
+                var scrolled = $(window).scrollTop();
+                var rate = scrolled * -0.5;
+                $('.hero-slide').css('transform', 'translateY(' + rate + 'px)');
+            });
+        }
+
+        // Enhanced dropdown behavior
+        $('.navbar-nav .dropdown').hover(
+            function() {
+                $(this).find('.dropdown-menu').addClass('show');
+                $(this).find('.dropdown-toggle').attr('aria-expanded', 'true');
+            },
+            function() {
+                $(this).find('.dropdown-menu').removeClass('show');
+                $(this).find('.dropdown-toggle').attr('aria-expanded', 'false');
+            }
+        );
     }
 
     // Initialize Animations
@@ -149,223 +198,204 @@
 
     // Form Validation
     function initializeFormValidation() {
-        // Bootstrap form validation
-        var forms = document.querySelectorAll('.needs-validation');
-        Array.prototype.slice.call(forms).forEach(function(form) {
-            form.addEventListener('submit', function(event) {
-                if (!form.checkValidity()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-            }, false);
+        // Custom validation for all forms
+        $('form').each(function() {
+            setupCustomValidation($(this));
         });
 
-        // Custom validation rules
-        setupCustomValidation();
+        // Password strength indicator
+        $('input[type="password"]').on('input', function() {
+            validatePasswordStrength($(this));
+        });
     }
 
-    // Custom Validation Rules
-    function setupCustomValidation() {
-        // Email validation
-        $('input[type="email"]').on('blur', function() {
-            var email = $(this).val();
-            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Custom Form Validation Setup
+    function setupCustomValidation(form) {
+        form.on('submit', function(e) {
+            var isValid = true;
             
-            if (email && !emailRegex.test(email)) {
-                $(this).addClass('is-invalid');
-                showValidationMessage($(this), 'Please enter a valid email address.');
-            } else {
-                $(this).removeClass('is-invalid').addClass('is-valid');
-                hideValidationMessage($(this));
-            }
-        });
-
-        // Phone validation
-        $('input[type="tel"]').on('blur', function() {
-            var phone = $(this).val();
-            var phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+            // Clear previous validation messages
+            form.find('.is-invalid').removeClass('is-invalid');
+            form.find('.invalid-feedback').remove();
             
-            if (phone && !phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''))) {
-                $(this).addClass('is-invalid');
-                showValidationMessage($(this), 'Please enter a valid phone number.');
+            // Required field validation
+            form.find('[required]').each(function() {
+                var field = $(this);
+                var value = field.val().trim();
+                
+                if (!value) {
+                    field.addClass('is-invalid');
+                    showValidationMessage(field, 'This field is required.');
+                    isValid = false;
+                }
+            });
+            
+            // Email validation
+            form.find('input[type="email"]').each(function() {
+                var field = $(this);
+                var email = field.val().trim();
+                var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                if (email && !emailRegex.test(email)) {
+                    field.addClass('is-invalid');
+                    showValidationMessage(field, 'Please enter a valid email address.');
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                form.find('.is-invalid').first().focus();
             } else {
-                $(this).removeClass('is-invalid').addClass('is-valid');
-                hideValidationMessage($(this));
+                showLoadingState(form);
             }
         });
-
-        // Password strength validation
-        $('input[type="password"]').on('input', function() {
-            if ($(this).attr('name') === 'password') {
-                validatePasswordStrength($(this));
-            }
-        });
+        
+        return isValid;
     }
 
     // Password Strength Validation
     function validatePasswordStrength(input) {
         var password = input.val();
+        var strengthMeter = input.siblings('.password-strength');
+        
+        if (!strengthMeter.length) {
+            strengthMeter = $('<div class="password-strength mt-2"></div>');
+            input.after(strengthMeter);
+        }
+        
         var strength = 0;
         var feedback = [];
-
-        // Length check
-        if (password.length >= 8) strength += 20;
+        
+        if (password.length >= 8) strength++;
         else feedback.push('At least 8 characters');
-
-        // Uppercase check
-        if (/[A-Z]/.test(password)) strength += 20;
-        else feedback.push('One uppercase letter');
-
-        // Lowercase check
-        if (/[a-z]/.test(password)) strength += 20;
-        else feedback.push('One lowercase letter');
-
-        // Number check
-        if (/\d/.test(password)) strength += 20;
-        else feedback.push('One number');
-
-        // Special character check
-        if (/[^a-zA-Z0-9]/.test(password)) strength += 20;
-        else feedback.push('One special character');
-
-        // Update strength indicator
-        var strengthBar = input.siblings('.password-strength').find('.progress-bar');
-        var strengthText = input.siblings('.password-strength').find('small');
-
-        if (strengthBar.length) {
-            strengthBar.css('width', strength + '%');
-            
-            if (strength < 40) {
-                strengthBar.removeClass().addClass('progress-bar bg-danger');
-                strengthText.text('Weak password - ' + feedback.join(', '));
-            } else if (strength < 80) {
-                strengthBar.removeClass().addClass('progress-bar bg-warning');
-                strengthText.text('Medium strength');
-            } else {
-                strengthBar.removeClass().addClass('progress-bar bg-success');
-                strengthText.text('Strong password');
-            }
+        
+        if (/[a-z]/.test(password)) strength++;
+        else feedback.push('Lowercase letter');
+        
+        if (/[A-Z]/.test(password)) strength++;
+        else feedback.push('Uppercase letter');
+        
+        if (/[0-9]/.test(password)) strength++;
+        else feedback.push('Number');
+        
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+        else feedback.push('Special character');
+        
+        var strengthText = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+        var strengthColor = ['danger', 'warning', 'info', 'success', 'success'];
+        
+        if (password.length > 0) {
+            strengthMeter.html(`
+                <div class="progress" style="height: 5px;">
+                    <div class="progress-bar bg-${strengthColor[strength]}" style="width: ${(strength + 1) * 20}%"></div>
+                </div>
+                <small class="text-${strengthColor[strength]}">${strengthText[strength] || 'Very Weak'}</small>
+                ${feedback.length ? `<small class="text-muted d-block">Missing: ${feedback.join(', ')}</small>` : ''}
+            `);
+        } else {
+            strengthMeter.empty();
         }
     }
 
     // Search Handlers
     function setupSearchHandlers() {
-        // Room search functionality
-        $('#roomSearch').on('input', function() {
-            var searchTerm = $(this).val().toLowerCase();
-            $('.room-card').each(function() {
-                var roomName = $(this).find('.card-title').text().toLowerCase();
-                var roomDescription = $(this).find('.card-text').text().toLowerCase();
-                
-                if (roomName.includes(searchTerm) || roomDescription.includes(searchTerm)) {
-                    $(this).closest('.col-lg-4').show();
-                } else {
-                    $(this).closest('.col-lg-4').hide();
-                }
-            });
-        });
-
-        // Quick search form
+        // Quick search functionality
         $('.quick-search-form').on('submit', function(e) {
             e.preventDefault();
-            performQuickSearch();
+            
+            var checkIn = $(this).find('input[name="check_in"]').val();
+            var checkOut = $(this).find('input[name="check_out"]').val();
+            
+            if (!checkIn || !checkOut) {
+                showNotification('warning', 'Please select both check-in and check-out dates.');
+                return;
+            }
+            
+            var formData = $(this).serialize();
+            window.location.href = '/rooms?' + formData;
         });
     }
 
     // Booking Handlers
     function setupBookingHandlers() {
-        // Room availability check
-        $('#checkAvailability').on('click', function() {
-            checkRoomAvailability();
-        });
-
-        // Guest count validation
-        $('select[name="num_guests"], #guests').on('change', function() {
-            var maxOccupancy = $(this).data('max-occupancy') || 10;
-            var selectedGuests = parseInt($(this).val());
+        // Room selection
+        $('.room-card .btn-primary').on('click', function(e) {
+            e.preventDefault();
             
-            if (selectedGuests > maxOccupancy) {
-                showNotification('warning', 'This room type has a maximum occupancy of ' + maxOccupancy + ' guests.');
-                $(this).val(maxOccupancy);
+            var roomId = $(this).data('room-id');
+            var checkIn = $('input[name="check_in"]').val();
+            var checkOut = $('input[name="check_out"]').val();
+            
+            if (!checkIn || !checkOut) {
+                showNotification('warning', 'Please select your dates first.');
+                return;
             }
+            
+            window.location.href = `/booking/${roomId}?check_in=${checkIn}&check_out=${checkOut}`;
         });
 
-        // Booking form submission
-        $('.booking-form').on('submit', function() {
-            showLoadingState($(this));
-        });
-
-        // Price calculation
+        // Price calculation setup
         setupPriceCalculation();
     }
 
-    // Price Calculation
+    // Price Calculation Setup
     function setupPriceCalculation() {
-        $('input[name="check_in_date"], input[name="check_out_date"], #checkIn, #checkOut').on('change', function() {
-            calculateBookingPrice();
-        });
+        $('input[name="check_in_date"], input[name="check_out_date"]').on('change', calculateBookingPrice);
     }
 
     // Calculate Booking Price
     function calculateBookingPrice() {
-        var checkIn = $('input[name="check_in_date"], #checkIn').val();
-        var checkOut = $('input[name="check_out_date"], #checkOut').val();
-        var pricePerNight = parseFloat($('#pricePerNight').data('price') || 0);
-
-        if (checkIn && checkOut && pricePerNight) {
-            var startDate = new Date(checkIn);
-            var endDate = new Date(checkOut);
-            var nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-
-            if (nights > 0) {
-                var subtotal = nights * pricePerNight;
-                var taxes = subtotal * 0.12; // 12% tax
-                var total = subtotal + taxes;
-
-                // Update price display
-                updatePriceDisplay(nights, subtotal, taxes, total);
-            }
+        var checkInDate = new Date($('input[name="check_in_date"]').val());
+        var checkOutDate = new Date($('input[name="check_out_date"]').val());
+        var pricePerNight = parseFloat($('#price-per-night').data('price') || 0);
+        
+        if (checkInDate && checkOutDate && checkOutDate > checkInDate) {
+            var timeDiff = checkOutDate.getTime() - checkInDate.getTime();
+            var nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            
+            var subtotal = nights * pricePerNight;
+            var taxes = subtotal * 0.12; // 12% tax
+            var total = subtotal + taxes;
+            
+            updatePriceDisplay(nights, subtotal, taxes, total);
         }
     }
 
     // Update Price Display
     function updatePriceDisplay(nights, subtotal, taxes, total) {
-        $('#nightsCount').text(nights);
-        $('#subtotalAmount').text(formatCurrency(subtotal));
-        $('#taxAmount').text(formatCurrency(taxes));
-        $('#totalAmount').text(formatCurrency(total));
-        
-        // Show price breakdown
+        $('#nights-count').text(nights);
+        $('#subtotal-amount').text(formatCurrency(subtotal));
+        $('#taxes-amount').text(formatCurrency(taxes));
+        $('#total-amount').text(formatCurrency(total));
         $('.price-breakdown').show();
     }
 
     // Contact Form Handlers
     function setupContactFormHandlers() {
         $('.contact-form').on('submit', function(e) {
-            var form = $(this);
+            e.preventDefault();
             
-            // Basic validation
-            if (!validateContactForm(form)) {
-                e.preventDefault();
-                return false;
+            if (validateContactForm($(this))) {
+                // Submit form via AJAX or normal submission
+                $(this)[0].submit();
             }
-            
-            showLoadingState(form);
         });
     }
 
-    // Validate Contact Form
+    // Contact Form Validation
     function validateContactForm(form) {
         var isValid = true;
-        var requiredFields = form.find('[required]');
         
-        requiredFields.each(function() {
-            if (!$(this).val().trim()) {
-                $(this).addClass('is-invalid');
+        form.find('input, textarea').each(function() {
+            var field = $(this);
+            var value = field.val().trim();
+            
+            hideValidationMessage(field);
+            
+            if (field.prop('required') && !value) {
+                showValidationMessage(field, 'This field is required.');
                 isValid = false;
-            } else {
-                $(this).removeClass('is-invalid').addClass('is-valid');
             }
         });
         
@@ -571,43 +601,161 @@
     }
 
     function showValidationMessage(element, message) {
-        var feedback = element.siblings('.invalid-feedback');
-        if (feedback.length === 0) {
-            feedback = $('<div class="invalid-feedback"></div>');
-            element.after(feedback);
-        }
-        feedback.text(message);
+        var feedback = $('<div class="invalid-feedback">' + message + '</div>');
+        element.addClass('is-invalid');
+        element.after(feedback);
     }
 
     function hideValidationMessage(element) {
+        element.removeClass('is-invalid');
         element.siblings('.invalid-feedback').remove();
     }
 
     function formatCurrency(amount) {
-        return '$' + amount.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        return '$' + amount.toFixed(2);
     }
 
-    // Public API
-    window.LuxuryResort = {
-        showNotification: showNotification,
-        formatCurrency: formatCurrency,
-        checkAvailability: checkRoomAvailability,
-        calculatePrice: calculateBookingPrice
+    // ADMIN SPECIFIC FUNCTIONS
+    
+    // Switch View Function for Bookings Page
+    window.switchView = function(viewType) {
+        var tableView = document.getElementById('tableView');
+        var calendarView = document.getElementById('calendarView');
+        var tableBtn = document.getElementById('tableViewBtn');
+        var calendarBtn = document.getElementById('calendarViewBtn');
+
+        if (viewType === 'table') {
+            // Show table view
+            tableView.style.display = 'block';
+            calendarView.style.display = 'none';
+            
+            // Update button states
+            tableBtn.classList.add('active');
+            calendarBtn.classList.remove('active');
+        } else if (viewType === 'calendar') {
+            // Show calendar view
+            tableView.style.display = 'none';
+            calendarView.style.display = 'block';
+            
+            // Update button states
+            calendarBtn.classList.add('active');
+            tableBtn.classList.remove('active');
+            
+            // Initialize calendar if not already done
+            if (!window.adminCalendarInitialized) {
+                initializeAdminCalendar();
+                window.adminCalendarInitialized = true;
+            }
+        }
     };
 
-    // Initialize everything when DOM is ready
-    $(document).ready(function() {
-        // Add loading class to body initially
-        $('body').addClass('loading');
-        
-        // Remove loading class when everything is loaded
-        $(window).on('load', function() {
-            $('body').removeClass('loading');
+    // Initialize Admin Calendar
+    function initializeAdminCalendar() {
+        // Check if FullCalendar is available
+        if (typeof FullCalendar !== 'undefined') {
+            var calendarEl = document.getElementById('adminCalendar');
+            if (calendarEl) {
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    height: 'auto',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+                    events: '/admin/bookings/calendar-data', // This should be implemented in your backend
+                    eventClick: function(info) {
+                        // Handle booking click
+                        showBookingDetails(info.event);
+                    }
+                });
+                calendar.render();
+                window.adminCalendar = calendar;
+            }
+        } else {
+            console.warn('FullCalendar not loaded. Calendar view may not work properly.');
+        }
+    }
+
+    // Export Bookings Function
+    window.exportBookings = function() {
+        // Get all checked bookings or all bookings if none checked
+        var selectedBookings = [];
+        $('table tbody input[type="checkbox"]:checked').each(function() {
+            var row = $(this).closest('tr');
+            var bookingData = {
+                id: $(this).val(),
+                guest: row.find('td:nth-child(3)').text().trim(),
+                room: row.find('td:nth-child(4)').text().trim(),
+                dates: row.find('td:nth-child(5)').text().trim(),
+                status: row.find('td:nth-child(6)').text().trim(),
+                payment: row.find('td:nth-child(7)').text().trim(),
+                total: row.find('td:nth-child(8)').text().trim()
+            };
+            selectedBookings.push(bookingData);
         });
-    });
+
+        if (selectedBookings.length === 0) {
+            showNotification('info', 'No bookings selected. Exporting all visible bookings.');
+            // Export all visible bookings
+            $('table tbody tr:visible').each(function() {
+                var row = $(this);
+                var bookingData = {
+                    id: row.find('input[type="checkbox"]').val(),
+                    guest: row.find('td:nth-child(3)').text().trim(),
+                    room: row.find('td:nth-child(4)').text().trim(),
+                    dates: row.find('td:nth-child(5)').text().trim(),
+                    status: row.find('td:nth-child(6)').text().trim(),
+                    payment: row.find('td:nth-child(7)').text().trim(),
+                    total: row.find('td:nth-child(8)').text().trim()
+                };
+                selectedBookings.push(bookingData);
+            });
+        }
+
+        // Convert to CSV and download
+        exportData(selectedBookings, 'bookings_export.csv', 'csv');
+    };
+
+    // Refresh Bookings Function
+    window.refreshBookings = function() {
+        showNotification('info', 'Refreshing bookings...');
+        setTimeout(function() {
+            window.location.reload();
+        }, 500);
+    };
+
+    // Refresh Calendar Function
+    window.refreshCalendar = function() {
+        if (window.adminCalendar) {
+            window.adminCalendar.refetchEvents();
+            showNotification('success', 'Calendar refreshed!');
+        } else {
+            showNotification('warning', 'Calendar not initialized.');
+        }
+    };
+
+    // Confirm Delete Function
+    window.confirmDelete = function(type, id) {
+        var itemName = type === 'room_type' ? 'room type' : 'room';
+        if (confirm('Are you sure you want to delete this ' + itemName + '? This action cannot be undone.')) {
+            // Create a form and submit it
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/admin/' + type.replace('_', '-') + 's/delete/' + id;
+            
+            // Add CSRF token
+            var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            var csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+    };
 
 })(jQuery);
 
@@ -756,4 +904,218 @@ $(document).ready(function() {
     initializeImageGallery();
     initializeStarRating();
     initializeCookieConsent();
+});
+
+// Global Date Selection Manager
+window.DateSelectionManager = {
+    // Keys for sessionStorage
+    CHECK_IN_KEY: 'booking_check_in_date',
+    CHECK_OUT_KEY: 'booking_check_out_date',
+    ROOM_TYPE_KEY: 'booking_room_type_id',
+    
+    // Get stored dates
+    getCheckInDate: function() {
+        const dateStr = sessionStorage.getItem(this.CHECK_IN_KEY);
+        return dateStr ? new Date(dateStr) : null;
+    },
+    
+    getCheckOutDate: function() {
+        const dateStr = sessionStorage.getItem(this.CHECK_OUT_KEY);
+        return dateStr ? new Date(dateStr) : null;
+    },
+    
+    getRoomTypeId: function() {
+        return sessionStorage.getItem(this.ROOM_TYPE_KEY);
+    },
+    
+    // Store dates
+    setCheckInDate: function(date) {
+        if (date) {
+            sessionStorage.setItem(this.CHECK_IN_KEY, date.toISOString().split('T')[0]);
+        } else {
+            sessionStorage.removeItem(this.CHECK_IN_KEY);
+        }
+        this.notifyDateChange();
+    },
+    
+    setCheckOutDate: function(date) {
+        if (date) {
+            sessionStorage.setItem(this.CHECK_OUT_KEY, date.toISOString().split('T')[0]);
+        } else {
+            sessionStorage.removeItem(this.CHECK_OUT_KEY);
+        }
+        this.notifyDateChange();
+    },
+    
+    setRoomTypeId: function(roomTypeId) {
+        if (roomTypeId) {
+            sessionStorage.setItem(this.ROOM_TYPE_KEY, roomTypeId);
+        } else {
+            sessionStorage.removeItem(this.ROOM_TYPE_KEY);
+        }
+    },
+    
+    // Set both dates at once
+    setDates: function(checkIn, checkOut, roomTypeId) {
+        this.setCheckInDate(checkIn);
+        this.setCheckOutDate(checkOut);
+        if (roomTypeId) {
+            this.setRoomTypeId(roomTypeId);
+        }
+    },
+    
+    // Clear all dates
+    clearDates: function() {
+        sessionStorage.removeItem(this.CHECK_IN_KEY);
+        sessionStorage.removeItem(this.CHECK_OUT_KEY);
+        sessionStorage.removeItem(this.ROOM_TYPE_KEY);
+        this.notifyDateChange();
+    },
+    
+    // Check if dates are set
+    hasDates: function() {
+        return this.getCheckInDate() && this.getCheckOutDate();
+    },
+    
+    // Get formatted date strings
+    getFormattedCheckIn: function() {
+        const date = this.getCheckInDate();
+        return date ? date.toISOString().split('T')[0] : '';
+    },
+    
+    getFormattedCheckOut: function() {
+        const date = this.getCheckOutDate();
+        return date ? date.toISOString().split('T')[0] : '';
+    },
+    
+    // Calculate nights
+    getNights: function() {
+        const checkIn = this.getCheckInDate();
+        const checkOut = this.getCheckOutDate();
+        if (checkIn && checkOut) {
+            return Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+        }
+        return 0;
+    },
+    
+    // Event listeners for date changes
+    listeners: [],
+    
+    // Add listener for date changes
+    onDateChange: function(callback) {
+        this.listeners.push(callback);
+    },
+    
+    // Notify all listeners of date changes
+    notifyDateChange: function() {
+        this.listeners.forEach(callback => {
+            try {
+                callback();
+            } catch (error) {
+                console.error('Error in date change listener:', error);
+            }
+        });
+    },
+    
+    // Initialize date inputs on page
+    initializeDateInputs: function() {
+        // Find check-in and check-out inputs
+        const checkInInput = document.querySelector('input[name="check_in_date"], input[id*="check_in"], input[id*="checkin"]');
+        const checkOutInput = document.querySelector('input[name="check_out_date"], input[id*="check_out"], input[id*="checkout"]');
+        
+        // Set stored values
+        if (checkInInput && this.getFormattedCheckIn()) {
+            checkInInput.value = this.getFormattedCheckIn();
+        }
+        
+        if (checkOutInput && this.getFormattedCheckOut()) {
+            checkOutInput.value = this.getFormattedCheckOut();
+        }
+        
+        // Add event listeners to update storage when inputs change
+        if (checkInInput) {
+            checkInInput.addEventListener('change', (e) => {
+                if (e.target.value) {
+                    this.setCheckInDate(new Date(e.target.value));
+                } else {
+                    this.setCheckInDate(null);
+                }
+            });
+        }
+        
+        if (checkOutInput) {
+            checkOutInput.addEventListener('change', (e) => {
+                if (e.target.value) {
+                    this.setCheckOutDate(new Date(e.target.value));
+                } else {
+                    this.setCheckOutDate(null);
+                }
+            });
+        }
+        
+        // Update booking summary if present
+        this.updateBookingSummary();
+    },
+    
+    // Update booking summary display
+    updateBookingSummary: function() {
+        const summaryCheckIn = document.getElementById('summaryCheckIn');
+        const summaryCheckOut = document.getElementById('summaryCheckOut');
+        const summaryNights = document.getElementById('summaryNights');
+        const bookingSummary = document.getElementById('bookingSummary');
+        
+        if (this.hasDates()) {
+            const checkInDate = this.getCheckInDate();
+            const checkOutDate = this.getCheckOutDate();
+            const nights = this.getNights();
+            
+            if (summaryCheckIn) {
+                summaryCheckIn.textContent = checkInDate.toLocaleDateString();
+            }
+            
+            if (summaryCheckOut) {
+                summaryCheckOut.textContent = checkOutDate.toLocaleDateString();
+            }
+            
+            if (summaryNights) {
+                summaryNights.textContent = nights + (nights === 1 ? ' night' : ' nights');
+            }
+            
+            if (bookingSummary) {
+                bookingSummary.style.display = 'block';
+            }
+        } else {
+            if (bookingSummary) {
+                bookingSummary.style.display = 'none';
+            }
+        }
+    }
+};
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize date inputs with stored values
+    DateSelectionManager.initializeDateInputs();
+    
+    // Listen for date changes to update displays
+    DateSelectionManager.onDateChange(function() {
+        DateSelectionManager.updateBookingSummary();
+    });
+});
+
+// Clear dates on page refresh
+window.addEventListener('beforeunload', function() {
+    // Mark that we're about to unload
+    sessionStorage.setItem('page_unloading', 'true');
+});
+
+// Check if page was refreshed and clear dates
+window.addEventListener('load', function() {
+    if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+        // This is a refresh, clear the dates
+        DateSelectionManager.clearDates();
+    } else {
+        // This is navigation, remove the unloading flag
+        sessionStorage.removeItem('page_unloading');
+    }
 });

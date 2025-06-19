@@ -4,7 +4,12 @@
 
 {% block page_title %}Booking Management{% endblock %}
 
-{% block content %}
+{% block extra_head %}
+<!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block admin_content %}
 <!-- Booking Filters -->
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
@@ -44,8 +49,81 @@
     </div>
 </div>
 
+<!-- View Toggle Buttons -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Booking Management</h6>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary active" id="tableViewBtn" onclick="switchView('table')">
+                    <i class="fas fa-table me-1"></i>Table View
+                </button>
+                <button type="button" class="btn btn-outline-primary" id="calendarViewBtn" onclick="switchView('calendar')">
+                    <i class="fas fa-calendar me-1"></i>Calendar View
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Calendar View -->
+<div class="card border-0 shadow-sm mb-4" id="calendarView" style="display: none;">
+    <div class="card-header bg-white border-0 py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Booking Calendar</h6>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-success" onclick="exportBookings()">
+                    <i class="fas fa-download me-1"></i>Export
+                </button>
+                <button class="btn btn-outline-primary" onclick="refreshCalendar()">
+                    <i class="fas fa-sync-alt me-1"></i>Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-lg-3 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Calendar Legend</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="legend">
+                            <div class="legend-item mb-2">
+                                <div class="legend-color bg-success" style="width: 20px; height: 20px; display: inline-block; border-radius: 4px; margin-right: 10px;"></div>
+                                <span>Confirmed Booking</span>
+                            </div>
+                            <div class="legend-item mb-2">
+                                <div class="legend-color bg-warning" style="width: 20px; height: 20px; display: inline-block; border-radius: 4px; margin-right: 10px;"></div>
+                                <span>Pending Booking</span>
+                            </div>
+                            <div class="legend-item mb-2">
+                                <div class="legend-color bg-danger" style="width: 20px; height: 20px; display: inline-block; border-radius: 4px; margin-right: 10px;"></div>
+                                <span>Cancelled Booking</span>
+                            </div>
+                            <div class="legend-item mb-2">
+                                <div class="legend-color bg-info" style="width: 20px; height: 20px; display: inline-block; border-radius: 4px; margin-right: 10px;"></div>
+                                <span>Completed Booking</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4" id="selectedDateInfo" style="display: none;">
+                            <h6>Selected Date</h6>
+                            <div id="selectedDateDisplay"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-9">
+                <div id="adminCalendar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Bookings Table -->
-<div class="card border-0 shadow-sm">
+<div class="card border-0 shadow-sm" id="tableView">
     <div class="card-header bg-white border-0 py-3">
         <div class="d-flex justify-content-between align-items-center">
             <h6 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>All Bookings ({{ bookings|length }})</h6>
@@ -92,10 +170,28 @@
                             </td>
                             <td>
                                 <div>
-                                    <strong>{{ booking.user.get_full_name() }}</strong>
-                                    <br><small class="text-muted">{{ booking.user.email }}</small>
-                                    {% if booking.user.phone %}
-                                        <br><small class="text-muted">{{ booking.user.phone }}</small>
+                                    <strong>
+                                        {% if booking.user %}
+                                            {{ booking.user.get_full_name() }}
+                                        {% else %}
+                                            {{ booking.first_name }} {{ booking.last_name }}
+                                        {% endif %}
+                                    </strong>
+                                    <br><small class="text-muted">
+                                        {% if booking.user %}
+                                            {{ booking.user.email }}
+                                        {% else %}
+                                            {{ booking.email }}
+                                        {% endif %}
+                                    </small>
+                                    {% if (booking.user and booking.user.phone) or (not booking.user and booking.phone) %}
+                                        <br><small class="text-muted">
+                                            {% if booking.user %}
+                                                {{ booking.user.phone }}
+                                            {% else %}
+                                                {{ booking.phone }}
+                                            {% endif %}
+                                        </small>
                                     {% endif %}
                                 </div>
                             </td>
@@ -110,8 +206,10 @@
                                 <div>
                                     <small class="text-muted">Check-in:</small><br>
                                     <strong>{{ booking.check_in_date.strftime('%m/%d/%Y') }}</strong>
+                                    <span class="badge bg-light text-dark">{{ booking.check_in_time }}</span>
                                     <br><small class="text-muted">Check-out:</small><br>
                                     <strong>{{ booking.check_out_date.strftime('%m/%d/%Y') }}</strong>
+                                    <span class="badge bg-light text-dark">{{ booking.check_out_time }}</span>
                                     <br><small class="text-muted">({{ booking.get_duration_days() }} nights)</small>
                                 </div>
                             </td>
@@ -187,11 +285,11 @@
                                                 </a></li>
                                             {% endif %}
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item" href="mailto:{{ booking.user.email }}">
+                                            <li><a class="dropdown-item" href="mailto:{% if booking.user %}{{ booking.user.email }}{% else %}{{ booking.email }}{% endif %}">
                                                 <i class="fas fa-envelope text-primary me-2"></i>Email Guest
                                             </a></li>
-                                            {% if booking.user.phone %}
-                                                <li><a class="dropdown-item" href="tel:{{ booking.user.phone }}">
+                                            {% if (booking.user and booking.user.phone) or (not booking.user and booking.phone) %}
+                                                <li><a class="dropdown-item" href="tel:{% if booking.user %}{{ booking.user.phone }}{% else %}{{ booking.phone }}{% endif %}">
                                                     <i class="fas fa-phone text-primary me-2"></i>Call Guest
                                                 </a></li>
                                             {% endif %}
@@ -265,24 +363,43 @@
                         <table class="table table-borderless">
                             <tr>
                                 <td width="30%"><strong>Name:</strong></td>
-                                <td>{{ booking.user.get_full_name() }}</td>
+                                <td>
+                                    {% if booking.user %}
+                                        {{ booking.user.get_full_name() }}
+                                    {% else %}
+                                        {{ booking.first_name }} {{ booking.last_name }}
+                                    {% endif %}
+                                </td>
                             </tr>
                             <tr>
                                 <td><strong>Email:</strong></td>
                                 <td>
+                                    {% if booking.user %}
                                     <a href="mailto:{{ booking.user.email }}">{{ booking.user.email }}</a>
+                                    {% else %}
+                                        <a href="mailto:{{ booking.email }}">{{ booking.email }}</a>
+                                    {% endif %}
                                 </td>
                             </tr>
                             <tr>
                                 <td><strong>Phone:</strong></td>
                                 <td>
+                                    {% if booking.user %}
                                     {% if booking.user.phone %}
                                         <a href="tel:{{ booking.user.phone }}">{{ booking.user.phone }}</a>
                                     {% else %}
                                         <span class="text-muted">Not provided</span>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if booking.phone %}
+                                            <a href="tel:{{ booking.phone }}">{{ booking.phone }}</a>
+                                        {% else %}
+                                            <span class="text-muted">Not provided</span>
+                                        {% endif %}
                                     {% endif %}
                                 </td>
                             </tr>
+                            {% if booking.user %}
                             <tr>
                                 <td><strong>Username:</strong></td>
                                 <td>{{ booking.user.username }}</td>
@@ -291,6 +408,12 @@
                                 <td><strong>Member Since:</strong></td>
                                 <td>{{ booking.user.created_at.strftime('%B %Y') }}</td>
                             </tr>
+                            {% else %}
+                            <tr>
+                                <td><strong>Guest Type:</strong></td>
+                                <td><span class="badge bg-info">Guest Booking</span></td>
+                            </tr>
+                            {% endif %}
                         </table>
                     </div>
                     
@@ -361,11 +484,11 @@
                             </tr>
                             <tr>
                                 <td><strong>Check-in:</strong></td>
-                                <td>{{ booking.check_in_date.strftime('%A, %B %d, %Y') }}</td>
+                                <td>{{ booking.check_in_date.strftime('%A, %B %d, %Y') }} at <span class="badge bg-primary">{{ booking.check_in_time }}</span></td>
                             </tr>
                             <tr>
                                 <td><strong>Check-out:</strong></td>
-                                <td>{{ booking.check_out_date.strftime('%A, %B %d, %Y') }}</td>
+                                <td>{{ booking.check_out_date.strftime('%A, %B %d, %Y') }} at <span class="badge bg-primary">{{ booking.check_out_time }}</span></td>
                             </tr>
                             <tr>
                                 <td><strong>Duration:</strong></td>
@@ -432,8 +555,15 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 <script>
+let adminCalendar;
+
 $(document).ready(function() {
+    // Initialize calendar view but keep it hidden initially
+    initializeAdminCalendar();
+    
     // Select all checkbox functionality
     $('#selectAll').change(function() {
         $('.booking-checkbox').prop('checked', this.checked);
@@ -453,6 +583,173 @@ $(document).ready(function() {
     });
 });
 
+function switchView(viewType) {
+    if (viewType === 'calendar') {
+        document.getElementById('tableView').style.display = 'none';
+        document.getElementById('calendarView').style.display = 'block';
+        
+        // Update button states
+        document.getElementById('tableViewBtn').classList.remove('active');
+        document.getElementById('calendarViewBtn').classList.add('active');
+        
+        // Render calendar if not already rendered
+        if (adminCalendar) {
+            adminCalendar.render();
+        }
+    } else {
+        document.getElementById('tableView').style.display = 'block';
+        document.getElementById('calendarView').style.display = 'none';
+        
+        // Update button states
+        document.getElementById('tableViewBtn').classList.add('active');
+        document.getElementById('calendarViewBtn').classList.remove('active');
+    }
+}
+
+function initializeAdminCalendar() {
+    const calendarEl = document.getElementById('adminCalendar');
+    
+    adminCalendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,listWeek'
+        },
+        events: function(fetchInfo, successCallback, failureCallback) {
+            // Fetch booking data from server
+            fetch('/admin/api/calendar-bookings?' + new URLSearchParams({
+                start: fetchInfo.startStr,
+                end: fetchInfo.endStr
+            }))
+            .then(response => response.json())
+            .then(data => successCallback(data))
+            .catch(error => {
+                console.error('Error fetching calendar data:', error);
+                failureCallback(error);
+            });
+        },
+        eventClick: function(info) {
+            // Show booking details when clicking on calendar event
+            showBookingDetails(info.event.extendedProps.booking_id);
+        },
+        dateClick: function(info) {
+            // Show all bookings for selected date
+            showDateBookings(info.dateStr);
+        },
+        eventDisplay: 'block',
+        displayEventTime: false,
+        eventBackgroundColor: function(info) {
+            const status = info.event.extendedProps.status;
+            switch(status) {
+                case 'confirmed': return '#28a745';
+                case 'pending': return '#ffc107';
+                case 'cancelled': return '#dc3545';
+                case 'completed': return '#17a2b8';
+                default: return '#6c757d';
+            }
+        },
+        eventTextColor: '#ffffff',
+        height: 600
+    });
+}
+
+function showBookingDetails(bookingId) {
+    // Trigger the existing booking modal
+    const modalTrigger = document.querySelector(`button[data-bs-target="#bookingModal${bookingId}"]`);
+    if (modalTrigger) {
+        modalTrigger.click();
+    }
+}
+
+function showDateBookings(dateStr) {
+    const selectedDate = new Date(dateStr + 'T00:00:00');
+    const dateDisplay = selectedDate.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    // Find all bookings for this date
+    const bookingsForDate = [];
+    {% for booking in bookings %}
+    const checkIn = new Date('{{ booking.check_in_date.isoformat() }}');
+    const checkOut = new Date('{{ booking.check_out_date.isoformat() }}');
+    
+    if (selectedDate >= checkIn && selectedDate < checkOut) {
+        bookingsForDate.push({
+            id: {{ booking.id }},
+            guestName: `
+                {% if booking.user %}
+                    {{ booking.user.get_full_name() }}
+                {% else %}
+                    {{ booking.first_name }} {{ booking.last_name }}
+                {% endif %}
+            `,
+            roomType: '{{ booking.room.room_type.name }}',
+            roomNumber: '{{ booking.room.room_number }}',
+            status: '{{ booking.booking_status }}',
+            checkInDate: '{{ booking.check_in_date.strftime("%m/%d/%Y") }}',
+            checkOutDate: '{{ booking.check_out_date.strftime("%m/%d/%Y") }}',
+            guests: {{ booking.num_guests }},
+            total: '{{ format_currency(booking.total_amount) }}'
+        });
+    }
+    {% endfor %}
+    
+    let content = `<h6>${dateDisplay}</h6>`;
+    
+    if (bookingsForDate.length === 0) {
+        content += '<p class="text-muted">No bookings for this date.</p>';
+    } else {
+        content += `<p><strong>${bookingsForDate.length} booking(s) found:</strong></p>`;
+        content += '<div class="list-group list-group-flush">';
+        
+        bookingsForDate.forEach(booking => {
+            const statusBadge = getStatusBadge(booking.status);
+            content += `
+                <div class="list-group-item p-2" style="cursor: pointer;" onclick="showBookingDetails(${booking.id})">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">${booking.guestName}</h6>
+                            <p class="mb-1 small">${booking.roomType} - Room ${booking.roomNumber}</p>
+                            <small class="text-muted">${booking.guests} guest(s) • ${booking.total}</small>
+                        </div>
+                        <small>${statusBadge}</small>
+                    </div>
+                </div>
+            `;
+        });
+        
+        content += '</div>';
+    }
+    
+    document.getElementById('selectedDateDisplay').innerHTML = content;
+    document.getElementById('selectedDateInfo').style.display = 'block';
+}
+
+function getStatusBadge(status) {
+    switch(status) {
+        case 'confirmed':
+            return '<span class="badge bg-success">Confirmed</span>';
+        case 'pending':
+            return '<span class="badge bg-warning">Pending</span>';
+        case 'cancelled':
+            return '<span class="badge bg-danger">Cancelled</span>';
+        case 'completed':
+            return '<span class="badge bg-info">Completed</span>';
+        default:
+            return '<span class="badge bg-secondary">Unknown</span>';
+    }
+}
+
+function refreshCalendar() {
+    if (adminCalendar) {
+        adminCalendar.refetchEvents();
+    }
+}
+
 function updateBulkActionButtons() {
     const selectedCount = $('.booking-checkbox:checked').length;
     $('#selectedCount').text(selectedCount);
@@ -467,29 +764,36 @@ function updateBookingStatus(bookingId, newStatus) {
     const confirmMessage = `Are you sure you want to ${newStatus} this booking?`;
     
     if (confirm(confirmMessage)) {
-        // Create form to submit status update
+        // Create form to submit status update to the correct route
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '{{ url_for("admin_bookings") }}';
         
-        const actionInput = document.createElement('input');
-        actionInput.type = 'hidden';
-        actionInput.name = 'action';
-        actionInput.value = 'update_status';
+        // Determine the correct action URL based on status
+        let actionUrl = '';
+        switch(newStatus) {
+            case 'confirmed':
+                actionUrl = `/admin/bookings/confirm/${bookingId}`;
+                break;
+            case 'cancelled':
+                actionUrl = `/admin/bookings/cancel/${bookingId}`;
+                break;
+            case 'completed':
+                actionUrl = `/admin/bookings/complete/${bookingId}`;
+                break;
+            default:
+                alert('Invalid status');
+                return;
+        }
         
-        const bookingInput = document.createElement('input');
-        bookingInput.type = 'hidden';
-        bookingInput.name = 'booking_id';
-        bookingInput.value = bookingId;
+        // Add CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = csrfToken;
         
-        const statusInput = document.createElement('input');
-        statusInput.type = 'hidden';
-        statusInput.name = 'new_status';
-        statusInput.value = newStatus;
-        
-        form.appendChild(actionInput);
-        form.appendChild(bookingInput);
-        form.appendChild(statusInput);
+        form.action = actionUrl;
+        form.appendChild(csrfInput);
         document.body.appendChild(form);
         form.submit();
     }
@@ -519,10 +823,25 @@ function bulkAction(action) {
     }
     
     if (confirm(confirmMessage)) {
+        if (action === 'export') {
+            // Handle export differently
+            const bookingIdsParam = selectedBookings.join(',');
+            window.location.href = `{{ url_for("admin_bookings") }}?export=true&booking_ids=${bookingIdsParam}`;
+            return;
+        }
+        
         // Create form for bulk action
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '{{ url_for("admin_bookings") }}';
+        form.action = '/admin/bookings/bulk-action';
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
         
         const actionInput = document.createElement('input');
         actionInput.type = 'hidden';

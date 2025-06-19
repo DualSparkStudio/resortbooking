@@ -3,18 +3,36 @@
 {% block title %}Book {{ room_type.name }} - Luxury Resort{% endblock %}
 
 {% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <ul class="mb-0">
+          {% for field, errors in form.errors.items() %}
+            {% for error in errors %}
+              <li><strong>{{ form[field].label.text }}:</strong> {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
 <!-- Booking Header -->
-<section class="booking-header py-5 bg-light">
+<section class="booking-header py-5 bg-cream-beige">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-8">
-                <h1 class="luxury-title mb-3">Book Your Stay</h1>
-                <p class="lead text-muted">Complete your reservation for {{ room_type.name }}</p>
+                <h1 class="luxury-title mb-3 text-forest">Book Your Stay</h1>
+                <p class="lead text-sage">Complete your reservation for {{ room_type.name }}</p>
             </div>
             <div class="col-lg-4 text-end">
                 <div class="booking-price-display">
-                    <span class="price-large">{{ format_currency(room_type.price_per_night) }}</span>
-                    <span class="price-period"> / night</span>
+                    <span class="price-large text-terracotta">{{ format_currency(room_type.price_per_night) }}</span>
+                    <span class="price-period text-sage"> / night</span>
                 </div>
             </div>
         </div>
@@ -28,7 +46,7 @@
             <!-- Booking Form -->
             <div class="col-lg-8 mb-5">
                 <div class="card border-0 shadow-lg">
-                    <div class="card-header bg-luxury text-white py-4">
+                    <div class="card-header bg-ocean text-white py-4">
                         <h4 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Reservation Details</h4>
                     </div>
                     <div class="card-body p-4">
@@ -41,7 +59,7 @@
                                     <label for="{{ form.check_in_date.id }}" class="form-label">
                                         <i class="fas fa-calendar-check me-2 luxury-accent"></i>Check-in Date
                                     </label>
-                                    {{ form.check_in_date(class="form-control form-control-lg") }}
+                                    {{ form.check_in_date(class="form-control form-control-lg" + (" is-invalid" if form.check_in_date.errors else "")) }}
                                     {% if form.check_in_date.errors %}
                                         <div class="text-danger mt-1">
                                             {% for error in form.check_in_date.errors %}
@@ -54,7 +72,7 @@
                                     <label for="{{ form.check_out_date.id }}" class="form-label">
                                         <i class="fas fa-calendar-times me-2 luxury-accent"></i>Check-out Date
                                     </label>
-                                    {{ form.check_out_date(class="form-control form-control-lg") }}
+                                    {{ form.check_out_date(class="form-control form-control-lg" + (" is-invalid" if form.check_out_date.errors else "")) }}
                                     {% if form.check_out_date.errors %}
                                         <div class="text-danger mt-1">
                                             {% for error in form.check_out_date.errors %}
@@ -65,13 +83,31 @@
                                 </div>
                             </div>
                             
+                            <!-- Check-in/Check-out Times -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="{{ form.check_in_time.id }}" class="form-label">
+                                        <i class="fas fa-clock me-2 luxury-accent"></i>Check-in Time
+                                    </label>
+                                    {{ form.check_in_time(class="form-select form-select-lg" + (" is-invalid" if form.check_in_time.errors else "")) }}
+                                    <small class="text-muted">Standard check-in time is 2:00 PM</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.check_out_time.id }}" class="form-label">
+                                        <i class="fas fa-clock me-2 luxury-accent"></i>Check-out Time
+                                    </label>
+                                    {{ form.check_out_time(class="form-select form-select-lg" + (" is-invalid" if form.check_out_time.errors else "")) }}
+                                    <small class="text-muted">Standard check-out time is 12:00 PM</small>
+                                </div>
+                            </div>
+                            
                             <!-- Number of Guests -->
                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <label for="{{ form.num_guests.id }}" class="form-label">
                                         <i class="fas fa-users me-2 luxury-accent"></i>Number of Guests
                                     </label>
-                                    {{ form.num_guests(class="form-control form-control-lg", max=room_type.max_occupancy) }}
+                                    {{ form.num_guests(class="form-control form-control-lg" + (" is-invalid" if form.num_guests.errors else ""), max=room_type.max_occupancy) }}
                                     <small class="text-muted">Maximum {{ room_type.max_occupancy }} guests for this room type</small>
                                     {% if form.num_guests.errors %}
                                         <div class="text-danger mt-1">
@@ -88,7 +124,7 @@
                                 <label for="{{ form.special_requests.id }}" class="form-label">
                                     <i class="fas fa-comment me-2 luxury-accent"></i>Special Requests (Optional)
                                 </label>
-                                {{ form.special_requests(class="form-control", rows="4", placeholder="Any special requests or preferences for your stay...") }}
+                                {{ form.special_requests(class="form-control" + (" is-invalid" if form.special_requests.errors else ""), rows="4", placeholder="Any special requests or preferences for your stay...") }}
                                 {% if form.special_requests.errors %}
                                     <div class="text-danger mt-1">
                                         {% for error in form.special_requests.errors %}
@@ -109,10 +145,14 @@
                             </div>
                             
                             <!-- Submit Button -->
-                            <div class="d-grid">
+                            <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-luxury btn-lg py-3">
                                     <i class="fas fa-credit-card me-2"></i>Proceed to Payment
                                 </button>
+                                <a href="{{ url_for('booking_calendar', room_type_id=room_type.id) }}" 
+                                   class="btn btn-outline-primary btn-lg py-3">
+                                    <i class="fas fa-calendar-alt me-2"></i>View Availability Calendar
+                                </a>
                             </div>
                         </form>
                     </div>
@@ -130,14 +170,14 @@
             <!-- Booking Summary -->
             <div class="col-lg-4">
                 <div class="card border-0 shadow-lg booking-summary sticky-top">
-                    <div class="card-header bg-dark text-white py-4">
+                    <div class="card-header bg-nature text-white py-4">
                         <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Booking Summary</h5>
                     </div>
                     <div class="card-body p-4">
                         <!-- Room Details -->
                         <div class="room-summary mb-4">
                             <div class="d-flex mb-3">
-                                <img src="{{ room_type.image_url or 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80' }}" 
+                                <img src="{{ room_type.get_primary_image() or 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80' }}" 
                                      alt="{{ room_type.name }}" class="room-thumb me-3">
                                 <div>
                                     <h6 class="mb-1">{{ room_type.name }}</h6>
@@ -228,6 +268,34 @@
 </section>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+.availability-alert.pulse {
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.availability-alert {
+    border-left: 4px solid #ffc107 !important;
+    background-color: #fff3cd !important;
+}
+
+.availability-alert .alert-heading {
+    color: #856404 !important;
+}
+
+button[type="submit"]:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+}
+</style>
+{% endblock %}
+
 {% block extra_scripts %}
 <script>
 $(document).ready(function() {
@@ -249,15 +317,42 @@ $(document).ready(function() {
             $('#{{ form.check_out_date.id }}').val(minCheckOut);
         }
         
+        // Check availability immediately when check-in date changes
         updateSummary();
     });
     
-    $('#{{ form.check_out_date.id }}, #{{ form.num_guests.id }}').change(updateSummary);
+    // Check availability immediately when check-out date or guests change
+    $('#{{ form.check_out_date.id }}').on('change input', function() {
+        updateSummary();
+    });
+    
+    $('#{{ form.num_guests.id }}').on('change input', function() {
+        updateSummary();
+    });
+    
+    // Also check on input events for real-time checking as user types
+    $('#{{ form.check_in_date.id }}').on('input', function() {
+        // Add small delay to avoid too many API calls while typing
+        clearTimeout(window.availabilityTimeout);
+        window.availabilityTimeout = setTimeout(updateSummary, 500);
+    });
+    
+    $('#{{ form.check_out_date.id }}').on('input', function() {
+        clearTimeout(window.availabilityTimeout);
+        window.availabilityTimeout = setTimeout(updateSummary, 500);
+    });
     
     function updateSummary() {
         const checkIn = $('#{{ form.check_in_date.id }}').val();
         const checkOut = $('#{{ form.check_out_date.id }}').val();
         const guests = $('#{{ form.num_guests.id }}').val();
+        
+        // Clear any existing availability messages
+        $('.availability-alert').remove();
+        $('button[type="submit"]').prop('disabled', false).html('<i class="fas fa-credit-card me-2"></i>Proceed to Payment');
+        
+        // Clear any loading indicators
+        $('.availability-loading').remove();
         
         if (checkIn && checkOut && guests) {
             const startDate = new Date(checkIn);
@@ -265,6 +360,19 @@ $(document).ready(function() {
             const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
             
             if (nights > 0) {
+                // Show loading indicator
+                showAvailabilityLoading();
+                
+                // Check availability for the selected dates
+                checkAvailability(checkIn, checkOut, function(isAvailable, unavailableDates) {
+                    // Remove loading indicator
+                    $('.availability-loading').remove();
+                    if (!isAvailable) {
+                        // Show availability warning
+                        showAvailabilityWarning(unavailableDates);
+                        $('#bookingSummary, #priceBreakdown').hide();
+                        $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-times me-2"></i>Dates Not Available');
+                    } else {
                 // Update summary section
                 $('#summaryCheckIn').text(startDate.toLocaleDateString());
                 $('#summaryCheckOut').text(endDate.toLocaleDateString());
@@ -284,6 +392,8 @@ $(document).ready(function() {
                 
                 // Show summary sections
                 $('#bookingSummary, #priceBreakdown').show();
+                    }
+                });
             } else {
                 $('#bookingSummary, #priceBreakdown').hide();
             }
@@ -292,7 +402,145 @@ $(document).ready(function() {
         }
     }
     
-    // Pre-fill form data from URL parameters (from room detail page)
+    function checkAvailability(checkInDate, checkOutDate, callback) {
+        // Check each date in the range for availability
+        const startDate = new Date(checkInDate);
+        const endDate = new Date(checkOutDate);
+        const currentDate = new Date(startDate);
+        const unavailableDates = [];
+        let pendingChecks = 0;
+        
+        while (currentDate < endDate) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            pendingChecks++;
+            
+            fetch('/api/date-info/{{ room_type.id }}/' + dateStr)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.available_rooms === 0 || data.resort_closed) {
+                        unavailableDates.push(new Date(dateStr).toLocaleDateString());
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking availability for ' + dateStr, error);
+                })
+                .finally(() => {
+                    pendingChecks--;
+                    if (pendingChecks === 0) {
+                        callback(unavailableDates.length === 0, unavailableDates);
+                    }
+                });
+            
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        // If no dates to check, consider available
+        if (pendingChecks === 0) {
+            callback(true, []);
+        }
+    }
+    
+    function showAvailabilityLoading() {
+        const loadingHtml = `
+            <div class="alert alert-info availability-loading" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-spinner fa-spin me-3"></i>
+                    <span>Checking room availability...</span>
+                </div>
+            </div>
+        `;
+        
+        // Insert the loading alert after the form header
+        $('.card-header').first().after(loadingHtml);
+    }
+    
+    function showAvailabilityWarning(unavailableDates) {
+        const alertHtml = `
+            <div class="alert alert-warning alert-dismissible fade show availability-alert" role="alert">
+                <div class="d-flex align-items-start">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3 mt-1 text-warning"></i>
+                    <div class="flex-grow-1">
+                        <h5 class="alert-heading mb-2">Sorry, No Rooms Available</h5>
+                        <p class="mb-2">All rooms are fully booked for the selected dates. Please choose different dates.</p>
+                        ${unavailableDates.length > 0 ? `
+                        <div class="mt-2">
+                            <strong>Unavailable dates:</strong>
+                            <ul class="mb-0 mt-1">
+                                ${unavailableDates.map(date => `<li>${date}</li>`).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
+                        <div class="mt-3">
+                            <a href="{{ url_for('booking_calendar', room_type_id=room_type.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-calendar-alt me-1"></i>View Calendar
+                            </a>
+                            <a href="{{ url_for('rooms') }}" class="btn btn-sm btn-outline-secondary ms-2">
+                                <i class="fas fa-bed me-1"></i>Other Room Types
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        
+        // Insert the alert after the form header
+        $('.card-header').first().after(alertHtml);
+        
+        // Scroll to the alert
+        $('html, body').animate({
+            scrollTop: $('.availability-alert').offset().top - 100
+        }, 500);
+    }
+    
+    // Initialize with global date manager
+    if (window.DateSelectionManager) {
+        // Set room type in storage
+        DateSelectionManager.setRoomTypeId({{ room_type.id }});
+        
+        // Load stored dates into form (priority: URL params > stored dates)
+        const urlParams = new URLSearchParams(window.location.search);
+        const checkInFromUrl = urlParams.get('check_in');
+        const checkOutFromUrl = urlParams.get('check_out');
+        const guestsFromUrl = urlParams.get('guests');
+        
+        // Use URL params if available, otherwise use stored dates
+        if (checkInFromUrl) {
+            $('#{{ form.check_in_date.id }}').val(checkInFromUrl);
+            DateSelectionManager.setCheckInDate(new Date(checkInFromUrl));
+        } else if (DateSelectionManager.getFormattedCheckIn()) {
+            $('#{{ form.check_in_date.id }}').val(DateSelectionManager.getFormattedCheckIn());
+        }
+        
+        if (checkOutFromUrl) {
+            $('#{{ form.check_out_date.id }}').val(checkOutFromUrl);
+            DateSelectionManager.setCheckOutDate(new Date(checkOutFromUrl));
+        } else if (DateSelectionManager.getFormattedCheckOut()) {
+            $('#{{ form.check_out_date.id }}').val(DateSelectionManager.getFormattedCheckOut());
+        }
+        
+        if (guestsFromUrl) {
+            $('#{{ form.num_guests.id }}').val(guestsFromUrl);
+        }
+        
+        // Add listeners to update global storage when form changes
+        $('#{{ form.check_in_date.id }}').on('change', function() {
+            if (this.value) {
+                DateSelectionManager.setCheckInDate(new Date(this.value));
+            } else {
+                DateSelectionManager.setCheckInDate(null);
+            }
+        });
+        
+        $('#{{ form.check_out_date.id }}').on('change', function() {
+            if (this.value) {
+                DateSelectionManager.setCheckOutDate(new Date(this.value));
+            } else {
+                DateSelectionManager.setCheckOutDate(null);
+            }
+        });
+    } else {
+        // Fallback: Pre-fill form data from URL parameters only
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('check_in')) {
         $('#{{ form.check_in_date.id }}').val(urlParams.get('check_in'));
@@ -302,10 +550,16 @@ $(document).ready(function() {
     }
     if (urlParams.get('guests')) {
         $('#{{ form.num_guests.id }}').val(urlParams.get('guests'));
+        }
     }
     
-    // Update summary on page load
+    // Update summary on page load (this will also check availability)
     updateSummary();
+    
+    // If dates are pre-filled, trigger availability check immediately
+    if (urlParams.get('check_in') && urlParams.get('check_out')) {
+        setTimeout(updateSummary, 100);
+    }
     
     // Form validation
     $('#bookingForm').submit(function(e) {
@@ -313,6 +567,15 @@ $(document).ready(function() {
         const checkOut = $('#{{ form.check_out_date.id }}').val();
         const guests = $('#{{ form.num_guests.id }}').val();
         const termsChecked = $('#termsCheck').is(':checked');
+        const submitButton = $(this).find('button[type="submit"]');
+        
+        // Check if submit button is disabled (due to unavailable dates)
+        if (submitButton.prop('disabled')) {
+            e.preventDefault();
+            $('.availability-alert').addClass('pulse');
+            setTimeout(() => $('.availability-alert').removeClass('pulse'), 1000);
+            return false;
+        }
         
         if (!checkIn || !checkOut || !guests || !termsChecked) {
             e.preventDefault();
@@ -322,8 +585,18 @@ $(document).ready(function() {
             return false;
         }
         
-        // Show loading state
-        $(this).find('button[type="submit"]').html('<i class="fas fa-spinner fa-spin me-2"></i>Processing...').prop('disabled', true);
+        // Final availability check before submission
+        e.preventDefault();
+        checkAvailability(checkIn, checkOut, function(isAvailable, unavailableDates) {
+            if (!isAvailable) {
+                showAvailabilityWarning(unavailableDates);
+                submitButton.prop('disabled', true).html('<i class="fas fa-times me-2"></i>Dates Not Available');
+            } else {
+                // Show loading state and submit
+                submitButton.html('<i class="fas fa-spinner fa-spin me-2"></i>Processing...').prop('disabled', true);
+                $('#bookingForm')[0].submit();
+            }
+        });
     });
 });
 </script>

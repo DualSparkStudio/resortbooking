@@ -1,115 +1,206 @@
 /* Luxury Resort Custom Styles */
 
-/* Root Variables - Fresh Professional Resort Theme */
+/* Root Variables - Calming Blues, Greens & Earth Tones Theme */
 :root {
-    --luxury-primary: #1a365d;
-    --luxury-secondary: #2d4a69;
-    --luxury-accent: #ed8936;
-    --luxury-gold: #d69e2e;
-    --luxury-teal: #38b2ac;
-    --luxury-dark: #1a202c;
-    --luxury-light: #f7fafc;
-    --luxury-cream: #fffef7;
-    --luxury-gradient: linear-gradient(135deg, #1a365d 0%, #2d4a69 50%, #38b2ac 100%);
-    --luxury-ocean-gradient: linear-gradient(135deg, #0987a0 0%, #38b2ac 100%);
-    --luxury-sunset-gradient: linear-gradient(135deg, #ed8936 0%, #d69e2e 100%);
-    --luxury-shadow: 0 20px 40px rgba(26, 54, 93, 0.15);
-    --luxury-shadow-hover: 0 30px 60px rgba(26, 54, 93, 0.25);
-    --text-high-contrast: #1a202c;
-    --text-medium-contrast: #2d3748;
-    --text-subtle: #4a5568;
+    /* Primary Blues - Calming Ocean Inspired */
+    --primary-blue: #2c5f7c;
+    --primary-blue-light: #4a7c95;
+    --primary-blue-dark: #1e4259;
+    --ocean-blue: #5085a5;
+    --sky-blue: #8bb8d8;
+    
+    /* Calming Greens - Nature Inspired */
+    --forest-green: #4a6741;
+    --sage-green: #87a96b;
+    --mint-green: #a8d5ba;
+    --seafoam: #c2e0d1;
+    
+    /* Warm Earth Tones */
+    --warm-terracotta: #c1502e;
+    --soft-amber: #d4a574;
+    --warm-sand: #e5c29f;
+    --golden-wheat: #dab785;
+    
+    /* Neutral Backgrounds */
+    --pure-white: #ffffff;
+    --warm-white: #fdfcf8;
+    --cream-beige: #f5f3f0;
+    --soft-beige: #f0ede8;
+    --light-gray: #f8f9fa;
+    
+    /* Text Colors */
+    --text-dark: #2c3e35;
+    --text-medium: #4a5d50;
+    --text-light: #6b7c6f;
+    --text-muted: #8a9b8e;
+    
+    /* Gradients */
+    --primary-gradient: linear-gradient(135deg, #2c5f7c 0%, #4a7c95 50%, #87a96b 100%);
+    --ocean-gradient: linear-gradient(135deg, #5085a5 0%, #8bb8d8 100%);
+    --nature-gradient: linear-gradient(135deg, #4a6741 0%, #87a96b 50%, #a8d5ba 100%);
+    --sunset-gradient: linear-gradient(135deg, #c1502e 0%, #d4a574 100%);
+    
+    /* Shadows */
+    --soft-shadow: 0 8px 25px rgba(44, 95, 124, 0.12);
+    --soft-shadow-hover: 0 15px 35px rgba(44, 95, 124, 0.18);
+    --warm-shadow: 0 8px 25px rgba(193, 80, 46, 0.1);
+    
+    /* Legacy variable mapping for compatibility */
+    --luxury-primary: var(--primary-blue);
+    --luxury-secondary: var(--primary-blue-light);
+    --luxury-accent: var(--warm-terracotta);
+    --luxury-gold: var(--soft-amber);
+    --luxury-teal: var(--sage-green);
+    --luxury-dark: var(--text-dark);
+    --luxury-light: var(--light-gray);
+    --luxury-cream: var(--warm-white);
+    --luxury-gradient: var(--primary-gradient);
+    --luxury-ocean-gradient: var(--ocean-gradient);
+    --luxury-sunset-gradient: var(--sunset-gradient);
+    --luxury-shadow: var(--soft-shadow);
+    --luxury-shadow-hover: var(--soft-shadow-hover);
+    --text-high-contrast: var(--text-dark);
+    --text-medium-contrast: var(--text-medium);
+    --text-subtle: var(--text-light);
 }
 
 /* Typography */
 body {
     font-family: 'Inter', 'Lato', sans-serif;
     line-height: 1.7;
-    color: var(--text-high-contrast);
-    background-color: var(--luxury-cream);
+    color: var(--text-dark);
+    background-color: var(--warm-white);
     font-weight: 400;
 }
 
 .luxury-title {
     font-family: 'Playfair Display', serif;
-    color: var(--luxury-primary);
+    color: var(--primary-blue);
     font-weight: 700;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.08);
 }
 
 .luxury-brand {
     font-family: 'Playfair Display', serif;
     font-weight: 700;
     font-size: 1.5rem;
-    color: var(--luxury-primary);
+    color: var(--primary-blue);
 }
 
 .luxury-accent {
-    color: var(--luxury-accent) !important;
+    color: var(--warm-terracotta) !important;
 }
 
 .luxury-link {
-    color: var(--luxury-accent);
+    color: var(--warm-terracotta);
     text-decoration: none;
     transition: all 0.3s ease;
     font-weight: 500;
 }
 
 .luxury-link:hover {
-    color: var(--luxury-gold);
+    color: var(--soft-amber);
     text-decoration: underline;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    color: var(--text-high-contrast);
+    color: var(--text-dark);
     font-weight: 600;
 }
 
 .text-muted {
-    color: var(--text-subtle) !important;
+    color: var(--text-muted) !important;
 }
 
 .bg-primary {
-    background: var(--luxury-gradient) !important;
+    background: var(--primary-gradient) !important;
 }
 
 .btn-primary {
-    background: var(--luxury-accent);
-    border-color: var(--luxury-accent);
+    background: var(--warm-terracotta);
+    border-color: var(--warm-terracotta);
     color: white;
     font-weight: 600;
     transition: all 0.3s ease;
+    border-radius: 8px;
 }
 
 .btn-primary:hover {
-    background: var(--luxury-gold);
-    border-color: var(--luxury-gold);
+    background: var(--soft-amber);
+    border-color: var(--soft-amber);
     transform: translateY(-2px);
-    box-shadow: var(--luxury-shadow);
+    box-shadow: var(--soft-shadow);
+}
+
+/* New Nature-Inspired Utility Classes */
+.bg-ocean {
+    background: var(--ocean-gradient) !important;
+}
+
+.bg-nature {
+    background: var(--nature-gradient) !important;
+}
+
+.bg-seafoam {
+    background-color: var(--seafoam) !important;
+}
+
+.bg-mint {
+    background-color: var(--mint-green) !important;
+}
+
+.bg-warm-white {
+    background-color: var(--warm-white) !important;
+}
+
+.bg-cream-beige {
+    background-color: var(--cream-beige) !important;
+}
+
+.text-ocean {
+    color: var(--ocean-blue) !important;
+}
+
+.text-sage {
+    color: var(--sage-green) !important;
+}
+
+.text-forest {
+    color: var(--forest-green) !important;
+}
+
+.text-terracotta {
+    color: var(--warm-terracotta) !important;
 }
 
 /* Navigation */
 .luxury-nav {
-    background: rgba(44, 62, 80, 0.95);
-    backdrop-filter: blur(10px);
+    background: linear-gradient(135deg, rgba(44, 95, 124, 0.95) 0%, rgba(74, 103, 117, 0.98) 50%, rgba(135, 169, 107, 0.95) 100%);
+    backdrop-filter: blur(15px);
     transition: all 0.3s ease;
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(44, 95, 124, 0.2);
+    border-bottom: 1px solid rgba(135, 169, 107, 0.3);
 }
 
 .luxury-nav .navbar-brand {
     color: white !important;
     font-size: 1.8rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-weight: 700;
 }
 
 .luxury-nav .nav-link {
-    color: rgba(255, 255, 255, 0.9) !important;
+    color: rgba(255, 255, 255, 0.95) !important;
     font-weight: 500;
     transition: all 0.3s ease;
     position: relative;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .luxury-nav .nav-link:hover {
-    color: var(--luxury-gold) !important;
+    color: var(--warm-sand) !important;
     transform: translateY(-1px);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .luxury-nav .nav-link:after {
@@ -119,13 +210,29 @@ h1, h2, h3, h4, h5, h6 {
     height: 2px;
     bottom: 0;
     left: 50%;
-    background-color: var(--luxury-gold);
+    background: linear-gradient(90deg, var(--warm-sand), var(--soft-amber));
     transition: all 0.3s ease;
+    border-radius: 2px;
 }
 
 .luxury-nav .nav-link:hover:after {
     width: 100%;
     left: 0;
+}
+
+/* Enhanced Navigation on Scroll */
+.luxury-nav.scrolled {
+    background: linear-gradient(135deg, rgba(44, 95, 124, 0.98) 0%, rgba(74, 103, 117, 1) 50%, rgba(135, 169, 107, 0.98) 100%);
+    box-shadow: 0 6px 25px rgba(44, 95, 124, 0.25);
+}
+
+.luxury-nav.navbar-hidden {
+    transform: translateY(-100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+.luxury-nav {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Buttons */
@@ -140,6 +247,23 @@ h1, h2, h3, h4, h5, h6 {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     box-shadow: var(--luxury-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-luxury::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-luxury:hover::before {
+    left: 100%;
 }
 
 .btn-luxury:hover {
@@ -174,19 +298,135 @@ h1, h2, h3, h4, h5, h6 {
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
+    position: relative;
+}
+
+/* Enhanced gradient overlays for better text visibility */
+.hero-slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(44, 95, 124, 0.6) 0%,
+        rgba(135, 169, 107, 0.4) 30%,
+        rgba(193, 80, 46, 0.3) 70%,
+        rgba(44, 95, 124, 0.5) 100%
+    );
+    z-index: 1;
+}
+
+.hero-slide::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(0, 0, 0, 0.1) 0%,
+        rgba(0, 0, 0, 0.4) 100%
+    );
+    z-index: 2;
+}
+
+/* Hero content with improved text styling */
+.hero-slide .container {
+    position: relative;
+    z-index: 3;
+}
+
+.hero-slide h1 {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(44, 95, 124, 0.3);
+    color: white;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    animation: heroTextSlideUp 1s ease-out 0.3s both;
+}
+
+.hero-slide p {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 400;
+    line-height: 1.6;
+    animation: heroTextSlideUp 1s ease-out 0.6s both;
+}
+
+.hero-slide .btn {
+    text-shadow: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    animation: heroTextSlideUp 1s ease-out 0.9s both;
+}
+
+.hero-slide .btn-luxury {
+    background: linear-gradient(135deg, var(--warm-terracotta) 0%, var(--soft-amber) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hero-slide .btn-luxury:hover {
+    background: linear-gradient(135deg, var(--soft-amber) 0%, var(--warm-terracotta) 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.hero-slide .btn-outline-light {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.hero-slide .btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 .carousel-indicators button {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    border: 2px solid white;
-    margin: 0 5px;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    margin: 0 6px;
+    background-color: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+.carousel-indicators button.active {
+    background: linear-gradient(135deg, var(--warm-sand), var(--soft-amber));
+    border-color: white;
+    transform: scale(1.2);
 }
 
 .carousel-control-prev,
 .carousel-control-next {
     width: 5%;
+    background: linear-gradient(to right, rgba(44, 95, 124, 0.1), transparent);
+    transition: all 0.3s ease;
+}
+
+.carousel-control-next {
+    background: linear-gradient(to left, rgba(44, 95, 124, 0.1), transparent);
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    background: linear-gradient(to right, rgba(44, 95, 124, 0.2), transparent);
+}
+
+.carousel-control-next:hover {
+    background: linear-gradient(to left, rgba(44, 95, 124, 0.2), transparent);
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
 /* Page Headers */
@@ -540,10 +780,13 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Admin Panel Styles */
 .admin-sidebar {
-    background: var(--luxury-gradient);
+    min-height: 100vh;
+    background: var(--nature-gradient);
 }
 
 .admin-nav-link {
+    color: rgba(255, 255, 255, 0.9);
+    padding: 12px 20px;
     border-radius: 8px;
     margin: 4px 0;
     transition: all 0.3s ease;
@@ -551,17 +794,20 @@ h1, h2, h3, h4, h5, h6 {
 
 .admin-nav-link:hover,
 .admin-nav-link.active {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(5px);
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    text-decoration: none;
 }
 
 .admin-main {
-    background-color: #f8f9fa;
+    background-color: var(--cream-beige);
+    min-height: 100vh;
 }
 
 .admin-header {
-    background: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: var(--warm-white);
+    box-shadow: 0 2px 4px rgba(44, 95, 124, 0.08);
+    border-bottom: 1px solid var(--seafoam);
 }
 
 /* Animations */
@@ -594,6 +840,18 @@ h1, h2, h3, h4, h5, h6 {
 
 .animate-pulse {
     animation: pulse 2s infinite;
+}
+
+/* Enhanced hero text animations */
+@keyframes heroTextSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Responsive Design */
@@ -800,6 +1058,144 @@ h1, h2, h3, h4, h5, h6 {
     transform: translateY(-3px);
 }
 
+/* Enhanced Calendar Selection */
+.booking-instructions {
+    background: rgba(230, 126, 34, 0.05);
+    border-left: 4px solid var(--luxury-accent);
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.booking-instructions h6 {
+    color: var(--luxury-accent);
+    font-weight: 600;
+}
+
+/* Calendar Date Selection Enhancements */
+.fc-day-selected,
+.fc-day-today.fc-day-selected {
+    background: linear-gradient(135deg, rgba(230, 126, 34, 0.3) 0%, rgba(243, 156, 18, 0.2) 100%) !important;
+    border: 2px solid var(--luxury-accent) !important;
+}
+
+.fc-daygrid-day.fc-day-selected {
+    background: linear-gradient(135deg, rgba(230, 126, 34, 0.15) 0%, rgba(243, 156, 18, 0.1) 100%) !important;
+}
+
+/* Enhanced selection states */
+.fc-highlight {
+    background: linear-gradient(135deg, rgba(230, 126, 34, 0.2) 0%, rgba(243, 156, 18, 0.15) 100%) !important;
+    border: 1px solid var(--luxury-accent) !important;
+}
+
+/* Improved hover states for selectable dates */
+.fc-daygrid-day.available-day:hover {
+    background: linear-gradient(135deg, rgba(168, 213, 186, 0.3) 0%, rgba(194, 224, 209, 0.2) 100%) !important;
+    cursor: pointer;
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+}
+
+.fc-daygrid-day.booked-day:hover {
+    cursor: not-allowed;
+    background: linear-gradient(135deg, rgba(193, 80, 46, 0.2) 0%, rgba(212, 165, 116, 0.15) 100%) !important;
+}
+
+/* Better visual feedback for partial availability */
+.fc-daygrid-day.partial-day:hover {
+    background: linear-gradient(135deg, rgba(212, 165, 116, 0.3) 0%, rgba(229, 194, 159, 0.2) 100%) !important;
+    cursor: pointer;
+}
+
+/* Selection animation */
+@keyframes dateSelect {
+    0% {
+        transform: scale(1);
+        box-shadow: none;
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(230, 126, 34, 0.4);
+    }
+    100% {
+        transform: scale(1.02);
+        box-shadow: 0 0 10px rgba(230, 126, 34, 0.3);
+    }
+}
+
+.fc-daygrid-day.date-selected {
+    animation: dateSelect 0.3s ease-out;
+}
+
+/* Improve selected dates display */
+#selectedDatesInfo {
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+#selectedDatesInfo .alert {
+    border: none;
+    background: linear-gradient(135deg, rgba(168, 213, 186, 0.1) 0%, rgba(194, 224, 209, 0.08) 100%);
+    color: var(--text-dark);
+}
+
+/* Enhanced styling for selected dates display */
+#selectedDatesInfo .card {
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(42, 102, 145, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(42, 102, 145, 0.15);
+}
+
+#selectedDatesInfo .card:hover {
+    box-shadow: 0 6px 20px rgba(42, 102, 145, 0.15);
+    transform: translateY(-2px);
+}
+
+#selectedDatesInfo .card-title {
+    color: var(--primary-blue);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+#selectedDatesDisplay p {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+#selectedDatesDisplay strong {
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+#bookingSummary .alert {
+    margin-bottom: 0;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(168, 213, 186, 0.2) 0%, rgba(194, 224, 209, 0.15) 100%);
+    border: 1px solid rgba(168, 213, 186, 0.3);
+    color: var(--text-dark);
+}
+
+#bookingSummary .alert strong {
+    color: var(--primary-blue);
+}
+
+/* Animation for when dates are selected */
+@keyframes selectedDatesSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#selectedDatesInfo[style*="block"] {
+    animation: selectedDatesSlideIn 0.4s ease-out;
+}
+
 /* Table Enhancements */
 .table-hover tbody tr:hover {
     background-color: rgba(230, 126, 34, 0.05);
@@ -853,4 +1249,40 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-luxury:focus {
     box-shadow: 0 0 0 0.2rem rgba(230, 126, 34, 0.25);
+}
+
+/* Page transition effects */
+.page-transition {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-transition.loaded {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Improved mobile navigation */
+@media (max-width: 991.98px) {
+    .luxury-nav {
+        background: linear-gradient(135deg, rgba(44, 95, 124, 0.98) 0%, rgba(74, 103, 117, 1) 50%, rgba(135, 169, 107, 0.98) 100%) !important;
+    }
+    
+    .navbar-collapse {
+        background: rgba(44, 95, 124, 0.95);
+        border-radius: 0 0 15px 15px;
+        margin-top: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(44, 95, 124, 0.3);
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .navbar-nav .nav-link:last-child {
+        border-bottom: none;
+    }
 }

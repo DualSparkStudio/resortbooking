@@ -4,7 +4,7 @@
 
 {% block content %}
 <!-- Room Hero Section -->
-<section class="room-hero" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('{{ room_type.image_url or 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80' }}') center/cover;">
+<section class="room-hero" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('{{ room_type.get_primary_image() or 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80' }}') center/cover;">
     <div class="container">
         <div class="row justify-content-center text-center text-white">
             <div class="col-lg-8">
@@ -18,6 +18,37 @@
         </div>
     </div>
 </section>
+
+<!-- Room Image Gallery -->
+{% set all_images = room_type.get_all_images() %}
+{% if all_images|length > 1 %}
+<section class="py-4 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h3 class="text-center mb-4">Room Gallery</h3>
+                <div class="row g-3">
+                    {% for image in all_images[:6] %}
+                    <div class="col-lg-4 col-md-6">
+                        <div class="gallery-item">
+                            <img src="{{ image }}" alt="{{ room_type.name }} - Image {{ loop.index }}" 
+                                 class="img-fluid rounded shadow-sm gallery-image" 
+                                 style="height: 250px; width: 100%; object-fit: cover; cursor: pointer;"
+                                 onclick="openImageModal('{{ image }}', '{{ room_type.name }} - Image {{ loop.index }}')">
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if all_images|length > 6 %}
+                <div class="text-center mt-3">
+                    <small class="text-muted">+ {{ all_images|length - 6 }} more images available</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
 
 <!-- Room Details -->
 <section class="py-5">
@@ -261,6 +292,22 @@
         </div>
     </div>
 </section>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="imageModalLabel">Room Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <img id="modalImage" src="" alt="" class="img-fluid w-100">
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_scripts %}
@@ -328,5 +375,13 @@ $(document).ready(function() {
         }
     });
 });
+
+// Function to open image modal
+function openImageModal(imageSrc, imageAlt) {
+    document.getElementById('modalImage').src = imageSrc;
+    document.getElementById('modalImage').alt = imageAlt;
+    document.getElementById('imageModalLabel').textContent = imageAlt;
+    new bootstrap.Modal(document.getElementById('imageModal')).show();
+}
 </script>
 {% endblock %}

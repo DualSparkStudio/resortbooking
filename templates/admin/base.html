@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}Admin Panel - Luxury Resort{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
@@ -20,10 +21,10 @@
     <style>
         .admin-sidebar {
             min-height: 100vh;
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            background: linear-gradient(135deg, #4a6741 0%, #87a96b 50%, #a8d5ba 100%);
         }
         .admin-nav-link {
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.9);
             padding: 12px 20px;
             border-radius: 8px;
             margin: 4px 0;
@@ -31,18 +32,35 @@
         }
         .admin-nav-link:hover,
         .admin-nav-link.active {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
             color: white;
             text-decoration: none;
         }
         .admin-main {
-            background-color: #f8f9fa;
+            background-color: #f5f3f0;
             min-height: 100vh;
         }
         .admin-header {
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-bottom: 1px solid #e9ecef;
+            background: #fdfcf8;
+            box-shadow: 0 2px 4px rgba(44, 95, 124, 0.08);
+            border-bottom: 1px solid #c2e0d1;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 4px 15px rgba(44, 95, 124, 0.1);
+            border-radius: 12px;
+        }
+        .btn-primary {
+            background: #c1502e;
+            border-color: #c1502e;
+            border-radius: 8px;
+        }
+        .btn-primary:hover {
+            background: #d4a574;
+            border-color: #d4a574;
+        }
+        .badge {
+            border-radius: 6px;
         }
     </style>
     
@@ -67,17 +85,17 @@
                            href="{{ url_for('admin_bookings') }}">
                             <i class="fas fa-calendar-alt me-2"></i>Bookings
                         </a>
-                        <a class="nav-link admin-nav-link {% if request.endpoint in ['admin_rooms', 'admin_add_room', 'admin_edit_room'] %}active{% endif %}" 
+                        <a class="nav-link admin-nav-link {% if request.endpoint in ['admin_rooms', 'admin_add_room', 'admin_edit_room', 'admin_room_types', 'admin_add_room_type', 'admin_edit_room_type'] %}active{% endif %}" 
                            href="{{ url_for('admin_rooms') }}">
-                            <i class="fas fa-bed me-2"></i>Rooms
-                        </a>
-                        <a class="nav-link admin-nav-link {% if request.endpoint in ['admin_room_types', 'admin_add_room_type', 'admin_edit_room_type'] %}active{% endif %}" 
-                           href="{{ url_for('admin_room_types') }}">
-                            <i class="fas fa-hotel me-2"></i>Room Types
+                            <i class="fas fa-bed me-2"></i>Rooms & Types
                         </a>
                         <a class="nav-link admin-nav-link {% if request.endpoint in ['admin_facilities', 'admin_add_facility', 'admin_edit_facility'] %}active{% endif %}" 
                            href="{{ url_for('admin_facilities') }}">
                             <i class="fas fa-swimming-pool me-2"></i>Facilities
+                        </a>
+                        <a class="nav-link admin-nav-link {% if request.endpoint in ['admin_resort_closures', 'admin_add_resort_closure', 'admin_edit_resort_closure'] %}active{% endif %}" 
+                           href="{{ url_for('admin_resort_closures') }}">
+                            <i class="fas fa-calendar-times me-2"></i>Resort Closures
                         </a>
                         <a class="nav-link admin-nav-link {% if request.endpoint == 'admin_users' %}active{% endif %}" 
                            href="{{ url_for('admin_users') }}">
@@ -142,7 +160,7 @@
                 
                 <!-- Page Content -->
                 <div class="p-4">
-                    {% block content %}{% endblock %}
+                    {% block admin_content %}{% endblock %}
                 </div>
             </div>
         </div>
@@ -156,6 +174,9 @@
     
     <!-- Chart.js for dashboard charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Main JS file with admin functions -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     
     {% block extra_scripts %}{% endblock %}
 </body>

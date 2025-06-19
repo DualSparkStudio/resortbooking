@@ -7,6 +7,10 @@ from flask_mail import Mail
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -55,9 +59,21 @@ def create_app():
     csrf.init_app(app)
     
     # Login manager configuration
-    login_manager.login_view = 'auth.login'
+    login_manager.login_view = 'login'
     login_manager.login_message = 'Please log in to access this page.'
     login_manager.login_message_category = 'info'
+    
+    # Add custom Jinja2 filters
+    @app.template_filter('truncate_list')
+    def truncate_list_filter(iterable, limit=5):
+        """Get the first 'limit' items from an iterable"""
+        return list(iterable)[:limit]
+    
+    # Add context processors
+    @app.context_processor
+    def inject_now():
+        from datetime import datetime
+        return {'now': datetime.now()}
     
     return app
 
