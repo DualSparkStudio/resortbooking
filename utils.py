@@ -1,7 +1,7 @@
 import os
 import stripe
 from datetime import date, datetime
-from flask import current_app, url_for
+from flask import current_app, url_for, request
 from flask_mail import Message
 from app import mail, db
 from models import Room, Booking
@@ -44,6 +44,39 @@ def calculate_booking_total(room_type, check_in_date, check_out_date):
     nights = (check_out_date - check_in_date).days
     return float(room_type.price_per_night) * nights
 
+def get_app_domain():
+    """Get the application domain for URLs"""
+    # Try to get domain from request context first
+    if request:
+        return request.url_root.rstrip('/')
+    
+    # Fallback to environment variables
+    domain = os.environ.get('RENDER_EXTERNAL_URL')  # Render.com
+    if domain:
+        return domain
+    
+    domain = os.environ.get('RAILWAY_STATIC_URL')  # Railway
+    if domain:
+        return f'https://{domain}'
+    
+    domain = os.environ.get('HEROKU_APP_NAME')  # Heroku
+    if domain:
+        return f'https://{domain}.herokuapp.com'
+    
+    # Replit fallback
+    domain = os.environ.get('REPLIT_DEV_DOMAIN')
+    if not domain:
+        domains = os.environ.get('REPLIT_DOMAINS', '').split(',')
+        domain = domains[0] if domains else 'localhost:5000'
+    
+    if not domain.startswith('http'):
+        if 'localhost' in domain or '127.0.0.1' in domain:
+            domain = f'http://{domain}'
+        else:
+            domain = f'https://{domain}'
+    
+    return domain
+
 def create_stripe_checkout_session(booking, stripe_secret_key, stripe_publishable_key):
     """Create a Stripe checkout session for a booking"""
     try:
@@ -54,17 +87,8 @@ def create_stripe_checkout_session(booking, stripe_secret_key, stripe_publishabl
             current_app.logger.error("Stripe API key not configured in settings")
             return None
         
-        # Determine the domain for redirect URLs
-        domain = os.environ.get('REPLIT_DEV_DOMAIN')
-        if not domain:
-            domains = os.environ.get('REPLIT_DOMAINS', '').split(',')
-            domain = domains[0] if domains else 'localhost:5000'
-        
-        if not domain.startswith('http'):
-            if 'localhost' in domain or '127.0.0.1' in domain:
-                domain = f'http://{domain}'
-            else:
-                domain = f'https://{domain}'
+        # Get the application domain
+        domain = get_app_domain()
         
         session = stripe.checkout.Session.create(
             payment_method_types=['card'],
