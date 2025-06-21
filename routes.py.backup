@@ -231,36 +231,6 @@ def payment_selection():
     booking = Booking.query.get_or_404(booking_id)
     return render_template('payment_selection.html', booking=booking)
 
-
-@app.route('/payment/test/<int:booking_id>')
-def process_test_payment(booking_id):
-    """Test payment route that bypasses actual payment processing"""
-    booking = Booking.query.get_or_404(booking_id)
-    
-    # Check if this is the user's pending booking
-    if session.get('pending_payment_booking_id') != booking_id:
-        flash('Invalid booking session.', 'danger')
-        return redirect(url_for('index'))
-    
-    try:
-        # Simulate successful payment
-        booking.payment_status = 'paid'
-        booking.booking_status = 'confirmed'
-        booking.payment_gateway = 'test'
-        db.session.commit()
-        
-        # Clear session
-        session.pop('pending_payment_booking_id', None)
-        
-        flash('Test payment successful! Your booking has been confirmed.', 'success')
-        return redirect(url_for('booking_success_fallback', booking_id=booking.id))
-        
-    except Exception as e:
-        app.logger.error(f"Error in test payment: {str(e)}")
-        flash('Test payment failed. Please try again.', 'danger')
-        return redirect(url_for('payment_selection'))
-
-
 @app.route('/payment/stripe/<int:booking_id>')
 def process_stripe_payment(booking_id):
     booking = Booking.query.get_or_404(booking_id)

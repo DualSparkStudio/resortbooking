@@ -286,6 +286,10 @@
                                 </div>
                                 <input type="file" class="form-control" name="images" multiple accept="image/*" onchange="handleFileSelect(event)" id="imageFileInput">
                                 <small class="text-muted">Select multiple images (JPEG, PNG) or enter URLs above</small>
+                                <div class="alert alert-info py-1 px-2 mt-2 mb-0" style="font-size: 0.875rem;">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    <strong>Note:</strong> The 1st image will be your main image
+                                </div>
                             </div>
                             
                             <!-- Image Preview Area -->
@@ -358,7 +362,7 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Amenities (one per line)</label>
-                                <textarea class="form-control" name="amenities" rows="4">{{ room_type.amenities|join('\n') if room_type.amenities else '' }}</textarea>
+                                <textarea class="form-control" name="amenities" rows="4">{{ room_type.amenities_list|join('\n') if room_type.amenities_list else '' }}</textarea>
                             </div>
                         </div>
                         
@@ -399,6 +403,10 @@
                                 </div>
                                 <input type="file" class="form-control" name="new_images" multiple accept="image/*" onchange="handleNewFileSelect(event, {{ room_type.id }})" id="newImageFileInput{{ room_type.id }}">
                                 <small class="text-muted">Select multiple images (JPEG, PNG) or enter URLs above</small>
+                                <div class="alert alert-info py-1 px-2 mt-2 mb-0" style="font-size: 0.875rem;">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    <strong>Note:</strong> The 1st image will be your main image
+                                </div>
                             </div>
                             
                             <!-- New Image Preview Area -->
@@ -528,6 +536,35 @@
 
 {% block extra_scripts %}
 <script>
+// Global notification function for this page
+function showNotification(type, message, duration = 5000) {
+    var alertClass = 'alert-' + type;
+    var iconMap = {
+        'success': 'fas fa-check-circle',
+        'danger': 'fas fa-exclamation-circle', 
+        'error': 'fas fa-exclamation-circle',
+        'warning': 'fas fa-exclamation-triangle',
+        'info': 'fas fa-info-circle'
+    };
+    var icon = iconMap[type] || iconMap.info;
+    
+    var notification = $(`
+        <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+             style="top: 100px; right: 20px; z-index: 9999; max-width: 400px;" role="alert">
+            <i class="${icon} me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `);
+    
+    $('body').append(notification);
+    
+    // Auto-dismiss after duration
+    setTimeout(function() {
+        notification.fadeOut(function() {
+            $(this).remove();
+        });
+    }, duration);
+}
 // Global variables to store selected images
 let selectedImages = [];
 let selectedImageUrls = [];
@@ -579,7 +616,8 @@ function handleFileSelect(event) {
     event.stopPropagation();
     
     const files = Array.from(event.target.files);
-    selectedImages = [...selectedImages, ...files];
+    // Replace the selected images array instead of appending
+    selectedImages = files;
     updateImagePreview();
     showNotification('success', `${files.length} file(s) selected!`);
 }
@@ -591,10 +629,8 @@ function handleNewFileSelect(event, roomTypeId) {
     event.stopPropagation();
     
     const files = Array.from(event.target.files);
-    if (!window['newSelectedImages' + roomTypeId]) {
-        window['newSelectedImages' + roomTypeId] = [];
-    }
-    window['newSelectedImages' + roomTypeId] = [...window['newSelectedImages' + roomTypeId], ...files];
+    // Replace the selected images array instead of appending
+    window['newSelectedImages' + roomTypeId] = files;
     updateNewImagePreview(roomTypeId);
     showNotification('success', `${files.length} file(s) selected!`);
 }
@@ -728,9 +764,11 @@ function removeSelectedImage(index, type) {
         updateHiddenImageFields();
     } else {
         selectedImages.splice(index, 1);
-        // Clear and reset file input
-        const fileInput = document.getElementById('imageFileInput');
-        fileInput.value = '';
+        // Clear file input if no files remain
+        if (selectedImages.length === 0) {
+            const fileInput = document.getElementById('imageFileInput');
+            fileInput.value = '';
+        }
     }
     updateImagePreview();
 }
@@ -746,9 +784,11 @@ function removeNewSelectedImage(index, type, roomTypeId) {
         const newFiles = window['newSelectedImages' + roomTypeId] || [];
         newFiles.splice(index, 1);
         window['newSelectedImages' + roomTypeId] = newFiles;
-        // Clear and reset file input
-        const fileInput = document.getElementById('newImageFileInput' + roomTypeId);
-        fileInput.value = '';
+        // Clear file input if no files remain
+        if (newFiles.length === 0) {
+            const fileInput = document.getElementById('newImageFileInput' + roomTypeId);
+            fileInput.value = '';
+        }
     }
     updateNewImagePreview(roomTypeId);
 }
@@ -804,6 +844,12 @@ function handleAddRoomTypeSubmit(event) {
 function handleEditRoomTypeSubmit(event, roomTypeId) {
     event.preventDefault();
     
+    // Prevent multiple submissions
+    if (window['submitting_' + roomTypeId]) {
+        return;
+    }
+    window['submitting_' + roomTypeId] = true;
+    
     const form = event.target;
     const formData = new FormData(form);
     
@@ -824,12 +870,14 @@ function handleEditRoomTypeSubmit(event, roomTypeId) {
         method: 'POST',
         body: formData
     }).then(response => {
+        window['submitting_' + roomTypeId] = false;
         if (response.ok) {
             window.location.reload();
         } else {
             showNotification('error', 'Failed to update room type');
         }
     }).catch(error => {
+        window['submitting_' + roomTypeId] = false;
         showNotification('error', 'An error occurred');
         console.error('Error:', error);
     });
@@ -891,8 +939,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Reset form data when modals are hidden
+    // Reset form data when modals are shown/hidden
     document.querySelectorAll('.modal').forEach(modal => {
+        // Clean state when modal is shown
+        modal.addEventListener('show.bs.modal', function() {
+            if (this.id === 'addRoomTypeModal') {
+                selectedImages = [];
+                selectedImageUrls = [];
+                updateImagePreview();
+            } else if (this.id.startsWith('editRoomTypeModal')) {
+                // Clear edit modal specific arrays
+                const roomTypeId = this.id.replace('editRoomTypeModal', '');
+                window['newSelectedImages' + roomTypeId] = [];
+                window['newSelectedImageUrls' + roomTypeId] = [];
+                updateNewImagePreview(roomTypeId);
+                // Reset file inputs
+                const fileInput = document.getElementById('newImageFileInput' + roomTypeId);
+                if (fileInput) fileInput.value = '';
+                const urlInput = document.getElementById('newImageUrlInput' + roomTypeId);
+                if (urlInput) urlInput.value = '';
+            }
+        });
+        
+        // Reset form data when modals are hidden
         modal.addEventListener('hidden.bs.modal', function() {
             if (this.id === 'addRoomTypeModal') {
                 selectedImages = [];
@@ -900,7 +969,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateImagePreview();
                 // Reset the form
                 document.getElementById('addRoomTypeForm').reset();
+            } else if (this.id.startsWith('editRoomTypeModal')) {
+                // Clear edit modal specific arrays
+                const roomTypeId = this.id.replace('editRoomTypeModal', '');
+                window['newSelectedImages' + roomTypeId] = [];
+                window['newSelectedImageUrls' + roomTypeId] = [];
+                updateNewImagePreview(roomTypeId);
+                // Reset file inputs
+                const fileInput = document.getElementById('newImageFileInput' + roomTypeId);
+                if (fileInput) fileInput.value = '';
+                const urlInput = document.getElementById('newImageUrlInput' + roomTypeId);
+                if (urlInput) urlInput.value = '';
             }
+        });
+    });
+    
+    // Initialize tabs and remember last active tab
+    // Get the last active tab from localStorage
+    const lastActiveTab = localStorage.getItem('adminRoomsActiveTab') || 'room-types-tab';
+    const tabElement = document.getElementById(lastActiveTab);
+    
+    if (tabElement) {
+        const tab = new bootstrap.Tab(tabElement);
+        tab.show();
+    }
+    
+    // Save active tab to localStorage when changed
+    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(button => {
+        button.addEventListener('shown.bs.tab', function(e) {
+            localStorage.setItem('adminRoomsActiveTab', e.target.id);
         });
     });
 });
@@ -934,23 +1031,6 @@ function confirmDelete(type, id, name) {
     }
 }
 
-// Initialize tabs and remember last active tab
-document.addEventListener('DOMContentLoaded', function() {
-    // Get the last active tab from localStorage
-    const lastActiveTab = localStorage.getItem('adminRoomsActiveTab') || 'room-types-tab';
-    const tabElement = document.getElementById(lastActiveTab);
-    
-    if (tabElement) {
-        const tab = new bootstrap.Tab(tabElement);
-        tab.show();
-    }
-    
-    // Save active tab to localStorage when changed
-    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(button => {
-        button.addEventListener('shown.bs.tab', function(e) {
-            localStorage.setItem('adminRoomsActiveTab', e.target.id);
-        });
-    });
-});
+
 </script>
 {% endblock %}

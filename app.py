@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_wtf.csrf import CSRFProtect
+from flask_migrate import Migrate
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
@@ -20,6 +21,7 @@ class Base(DeclarativeBase):
 
 # Initialize extensions
 db = SQLAlchemy(model_class=Base)
+migrate = Migrate()
 login_manager = LoginManager()
 mail = Mail()
 csrf = CSRFProtect()
@@ -32,6 +34,17 @@ def create_app():
     app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     
+    # File upload configuration
+    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+    
+    # Ensure upload directory exists
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    
+    # Ensure instance directory exists for SQLite database
+    instance_dir = os.path.join(app.root_path, 'instance')
+    os.makedirs(instance_dir, exist_ok=True)
+    
     # Database configuration
     database_url = os.environ.get("DATABASE_URL")
     if database_url:
@@ -40,8 +53,9 @@ def create_app():
             database_url = database_url.replace("postgres://", "postgresql://", 1)
         app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     else:
-        # Development database (SQLite)
-        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///instance/resort_booking.db"
+        # Development database (SQLite) - use absolute path
+        db_path = os.path.join(app.root_path, 'instance', 'resort_booking.db')
+        app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
     
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
@@ -63,6 +77,7 @@ def create_app():
     
     # Initialize extensions with app
     db.init_app(app)
+    migrate.init_app(app, db)
     login_manager.init_app(app)
     mail.init_app(app)
     csrf.init_app(app)
@@ -94,3 +109,8 @@ with app.app_context():
     import models  # noqa: F401
     db.create_all()
     logging.info("Database tables created")
+
+if __name__ == '__main__':
+    # Import routes after everything is set up
+    import routes  # noqa: F401
+    app.run(debug=True, host='0.0.0.0', port=5000)

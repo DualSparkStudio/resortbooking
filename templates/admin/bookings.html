@@ -513,10 +513,34 @@
                                 <td><strong>Total Amount:</strong></td>
                                 <td><strong>{{ format_currency(booking.total_amount) }}</strong></td>
                             </tr>
+                            <tr>
+                                <td><strong>Payment Gateway:</strong></td>
+                                <td>
+                                    {% if booking.payment_gateway == 'stripe' %}
+                                        <span class="badge bg-primary">Stripe</span>
+                                    {% elif booking.payment_gateway == 'razorpay' %}
+                                        <span class="badge bg-success">Razorpay</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ booking.payment_gateway|title }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
                             {% if booking.stripe_session_id %}
                             <tr>
                                 <td><strong>Stripe Session:</strong></td>
                                 <td><small class="text-muted">{{ booking.stripe_session_id }}</small></td>
+                            </tr>
+                            {% endif %}
+                            {% if booking.razorpay_order_id %}
+                            <tr>
+                                <td><strong>Razorpay Order:</strong></td>
+                                <td><small class="text-muted">{{ booking.razorpay_order_id }}</small></td>
+                            </tr>
+                            {% endif %}
+                            {% if booking.razorpay_payment_id %}
+                            <tr>
+                                <td><strong>Razorpay Payment:</strong></td>
+                                <td><small class="text-muted">{{ booking.razorpay_payment_id }}</small></td>
                             </tr>
                             {% endif %}
                         </table>

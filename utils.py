@@ -1,13 +1,25 @@
 import os
 import stripe
+import razorpay
 from datetime import date, datetime
 from flask import current_app, url_for, request
 from flask_mail import Message
 from app import mail, db
 from models import Room, Booking
+import uuid
+from werkzeug.utils import secure_filename
 
 # Configure Stripe
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+
+# Configure Razorpay
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET')
+
+if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
+    razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+else:
+    razorpay_client = None
 
 def check_room_availability(room_type_id, check_in_date, check_out_date, exclude_booking_id=None):
     """Check if rooms of a specific type are available for the given dates"""
@@ -120,6 +132,113 @@ def create_stripe_checkout_session(booking, stripe_secret_key, stripe_publishabl
         current_app.logger.error(f"Error creating Stripe session: {str(e)}")
         return None
 
+def create_razorpay_order(booking):
+    """Create a Razorpay order for a booking"""
+    try:
+        if not razorpay_client:
+            current_app.logger.error("Razorpay client not configured")
+            return None
+        
+        # Calculate amount in paise (smallest currency unit)
+        amount_in_paise = int(booking.total_amount * 100)
+        
+        # Create order data with all required fields
+        order_data = {
+            'amount': amount_in_paise,  # Amount in paise (required)
+            'currency': 'INR',  # Currency code (required)
+            'receipt': f'booking_{booking.id}_{int(datetime.now().timestamp())}',  # Unique receipt ID (required)
+            'payment_capture': 1,  # Auto-capture payment (1 = auto, 0 = manual)
+            'notes': {
+                'booking_id': str(booking.id),
+                'room_number': booking.room.room_number,
+                'room_type': booking.room.room_type.name,
+                'check_in': booking.check_in_date.isoformat(),
+                'check_out': booking.check_out_date.isoformat(),
+                'guest_name': f"{booking.first_name} {booking.last_name}",
+                'guest_email': booking.email
+            }
+        }
+        
+        # Log the order creation attempt
+        current_app.logger.info(f"Creating Razorpay order for booking {booking.id}")
+        current_app.logger.info(f"Order data: amount={amount_in_paise} paise (₹{booking.total_amount}), currency=INR")
+        current_app.logger.info(f"Receipt ID: {order_data['receipt']}")
+        
+        # Create the order
+        order = razorpay_client.order.create(data=order_data)
+        
+        # Log successful order creation
+        current_app.logger.info(f"Razorpay order created successfully: {order['id']}")
+        current_app.logger.info(f"Order status: {order.get('status', 'unknown')}")
+        current_app.logger.info(f"Order amount: {order.get('amount', 'unknown')} paise")
+        
+        # Update booking with Razorpay order ID
+        booking.razorpay_order_id = order['id']
+        booking.payment_gateway = 'razorpay'
+        db.session.commit()
+        
+        current_app.logger.info(f"Booking {booking.id} updated with Razorpay order ID: {order['id']}")
+        
+        return order
+        
+    except razorpay.errors.BadRequestError as e:
+        current_app.logger.error(f"Razorpay BadRequestError: {str(e)}")
+        current_app.logger.error(f"Error code: {getattr(e, 'code', 'unknown')}")
+        current_app.logger.error(f"Error description: {getattr(e, 'description', 'unknown')}")
+        return None
+    except razorpay.errors.AuthenticationError as e:
+        current_app.logger.error(f"Razorpay AuthenticationError: {str(e)}")
+        current_app.logger.error("Check your Razorpay API keys")
+        return None
+    except Exception as e:
+        current_app.logger.error(f"Unexpected error creating Razorpay order: {str(e)}")
+        current_app.logger.error(f"Exception type: {type(e).__name__}")
+        import traceback
+        current_app.logger.error(f"Full traceback: {traceback.format_exc()}")
+        return None
+
+def verify_razorpay_payment(payment_id, order_id, signature):
+    """Verify Razorpay payment signature"""
+    try:
+        if not razorpay_client:
+            current_app.logger.error("Razorpay client not configured for payment verification")
+            return False
+        
+        # Log verification attempt
+        current_app.logger.info(f"Verifying Razorpay payment signature")
+        current_app.logger.info(f"Payment ID: {payment_id}")
+        current_app.logger.info(f"Order ID: {order_id}")
+        current_app.logger.info(f"Signature present: {'Yes' if signature else 'No'}")
+        
+        # Prepare verification parameters
+        params_dict = {
+            'razorpay_order_id': order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature
+        }
+        
+        # Verify the payment signature
+        current_app.logger.info("Calling Razorpay signature verification...")
+        razorpay_client.utility.verify_payment_signature(params_dict)
+        
+        current_app.logger.info("Payment signature verification successful")
+        return True
+        
+    except razorpay.errors.SignatureVerificationError as e:
+        current_app.logger.error(f"Razorpay signature verification failed: {str(e)}")
+        current_app.logger.error("This indicates the payment may be fraudulent or tampered with")
+        return False
+    except razorpay.errors.BadRequestError as e:
+        current_app.logger.error(f"Razorpay BadRequestError during verification: {str(e)}")
+        current_app.logger.error(f"Error code: {getattr(e, 'code', 'unknown')}")
+        return False
+    except Exception as e:
+        current_app.logger.error(f"Unexpected error verifying Razorpay payment: {str(e)}")
+        current_app.logger.error(f"Exception type: {type(e).__name__}")
+        import traceback
+        current_app.logger.error(f"Full traceback: {traceback.format_exc()}")
+        return False
+
 def send_booking_confirmation_email(booking, mail_settings, app_domain):
     """Send booking confirmation email to user or guest"""
     try:
@@ -215,3 +334,31 @@ def get_star_rating_html(rating):
         else:
             stars.append('<i class="far fa-star text-muted"></i>')
     return ' '.join(stars)
+
+def allowed_file(filename):
+    """Check if the file has an allowed extension"""
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def save_uploaded_image(file, upload_folder, prefix="image"):
+    """
+    Save an uploaded image file with a secure filename
+    Returns the relative URL path to the saved file
+    """
+    if not file or not file.filename:
+        return None
+    
+    if not allowed_file(file.filename):
+        raise ValueError("File type not allowed. Please use PNG, JPG, JPEG, GIF, or WEBP files.")
+    
+    # Secure the filename and add unique identifier
+    filename = secure_filename(file.filename)
+    unique_filename = f"{prefix}_{uuid.uuid4().hex[:8]}_{filename}"
+    
+    # Save the file to the upload folder
+    file_path = os.path.join(upload_folder, unique_filename)
+    file.save(file_path)
+    
+    # Return the relative URL path
+    return f"/static/uploads/{unique_filename}"

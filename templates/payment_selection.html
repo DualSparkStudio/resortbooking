@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Select Payment Method - Luxury Resort{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Booking Summary -->
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-receipt me-2"></i>Booking Summary</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">Room Details</h6>
+                            <p><strong>Room Type:</strong> {{ booking.room.room_type.name }}</p>
+                            <p><strong>Room Number:</strong> {{ booking.room.room_number }}</p>
+                            <p><strong>Max Occupancy:</strong> {{ booking.room.room_type.max_occupancy }} guests</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">Stay Details</h6>
+                            <p><strong>Check-in:</strong> {{ booking.check_in_date.strftime('%B %d, %Y') }} at {{ booking.check_in_time }}</p>
+                            <p><strong>Check-out:</strong> {{ booking.check_out_date.strftime('%B %d, %Y') }} at {{ booking.check_out_time }}</p>
+                            <p><strong>Duration:</strong> {{ booking.get_duration_days() }} night{{ 's' if booking.get_duration_days() > 1 else '' }}</p>
+                            <p><strong>Guests:</strong> {{ booking.num_guests }}</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">Guest Information</h6>
+                            <p><strong>Name:</strong> {{ booking.first_name }} {{ booking.last_name }}</p>
+                            <p><strong>Email:</strong> {{ booking.email }}</p>
+                            {% if booking.phone %}
+                            <p><strong>Phone:</strong> {{ booking.phone }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">Payment Summary</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Rate per night:</span>
+                                <span>{{ format_currency(booking.room.room_type.price_per_night) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Duration:</span>
+                                <span>{{ booking.get_duration_days() }} night{{ 's' if booking.get_duration_days() > 1 else '' }}</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold h5">
+                                <span>Total Amount:</span>
+                                <span class="text-success">{{ format_currency(booking.total_amount) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if booking.special_requests %}
+                    <hr>
+                    <h6 class="text-primary mb-3">Special Requests</h6>
+                    <p class="text-muted">{{ booking.special_requests }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Payment Method Selection -->
+            <div class="card shadow-lg">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-credit-card me-2"></i>Select Payment Method</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">Choose your preferred payment method to complete your booking:</p>
+                    
+                    <div class="row g-4">
+                        <!-- Stripe Payment -->
+                        <div class="col-md-6">
+                            <div class="payment-option border rounded p-4 h-100 text-center">
+                                <div class="payment-icon mb-3">
+                                    <i class="fab fa-stripe fa-3x text-primary"></i>
+                                </div>
+                                <h5 class="mb-3">Credit/Debit Card</h5>
+                                <p class="text-muted mb-4">Pay securely with your credit or debit card using Stripe</p>
+                                <div class="payment-methods mb-3">
+                                    <i class="fab fa-cc-visa fa-2x text-muted me-2"></i>
+                                    <i class="fab fa-cc-mastercard fa-2x text-muted me-2"></i>
+                                    <i class="fab fa-cc-amex fa-2x text-muted"></i>
+                                </div>
+                                <a href="{{ url_for('process_stripe_payment', booking_id=booking.id) }}" 
+                                   class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-credit-card me-2"></i>Pay with Card
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Razorpay Payment -->
+                        <div class="col-md-6">
+                            <div class="payment-option border rounded p-4 h-100 text-center">
+                                <div class="payment-icon mb-3">
+                                    <i class="fas fa-mobile-alt fa-3x text-success"></i>
+                                </div>
+                                <h5 class="mb-3">UPI & More</h5>
+                                <p class="text-muted mb-4">Pay using UPI, Net Banking, Wallets, or Cards via Razorpay</p>
+                                <div class="payment-methods mb-3">
+                                    <span class="badge bg-success me-1">UPI</span>
+                                    <span class="badge bg-info me-1">NetBanking</span>
+                                    <span class="badge bg-warning">Wallets</span>
+                                </div>
+                                <a href="{{ url_for('process_razorpay_payment', booking_id=booking.id) }}" 
+                                   class="btn btn-success btn-lg w-100">
+                                    <i class="fas fa-mobile-alt me-2"></i>Pay with Razorpay
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <p class="text-muted">
+                            <i class="fas fa-lock me-1"></i>
+                            Your payment information is secure and encrypted
+                        </p>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel Booking
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card payment-option h-100">
+                    <div class="card-body text-center">
+                        <div class="payment-icon mb-3">
+                            <i class="fas fa-flask fa-3x text-success"></i>
+                        </div>
+                        <h5 class="card-title">Test Payment</h5>
+                        <p class="card-text">Skip payment for testing purposes</p>
+                        <a href="{{ url_for('process_test_payment', booking_id=session.pending_payment_booking_id) }}" 
+                           class="btn btn-success btn-lg">
+                            <i class="fas fa-check"></i> Test Payment
+                        </a>
+                    </div>
+                </div>
+            </div>
+</div>
+
+<style>
+.payment-option {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.payment-option:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.payment-icon {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+</style>
+{% endblock %} 

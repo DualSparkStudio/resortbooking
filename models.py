@@ -66,6 +66,13 @@ class RoomType(db.Model):
             image_urls.append(self.image_url)
         return image_urls
     
+    @property
+    def amenities_list(self):
+        """Get amenities as a list for template rendering"""
+        if self.amenities:
+            return [line.strip() for line in self.amenities.split('\n') if line.strip()]
+        return []
+    
     def __repr__(self):
         return f'<RoomType {self.name}>'
 
@@ -113,7 +120,10 @@ class Booking(db.Model):
     total_amount = db.Column(db.Numeric(10, 2), nullable=False)
     booking_status = db.Column(db.String(20), default='pending')  # pending, confirmed, cancelled, completed
     payment_status = db.Column(db.String(20), default='pending')  # pending, paid, failed, refunded
+    payment_gateway = db.Column(db.String(20), default='stripe')  # stripe, razorpay
     stripe_session_id = db.Column(db.String(255))
+    razorpay_order_id = db.Column(db.String(255))
+    razorpay_payment_id = db.Column(db.String(255))
     special_requests = db.Column(db.Text)
     # Guest fields
     first_name = db.Column(db.String(50), nullable=False)
