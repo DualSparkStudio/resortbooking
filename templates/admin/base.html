@@ -101,6 +101,14 @@
                            href="{{ url_for('admin_users') }}">
                             <i class="fas fa-users me-2"></i>Users
                         </a>
+                        <a class="nav-link admin-nav-link {% if request.endpoint == 'admin_email_config' %}active{% endif %}" 
+                           href="{{ url_for('admin_email_config') }}">
+                            <i class="fas fa-envelope-open-text me-2"></i>Email Configuration
+                        </a>
+                        <a class="nav-link admin-nav-link {% if request.endpoint == 'admin_profile' %}active{% endif %}" 
+                           href="{{ url_for('admin_profile') }}">
+                            <i class="fas fa-user-cog me-2"></i>My Profile
+                        </a>
                         
                         <hr class="my-3" style="border-color: rgba(255,255,255,0.2);">
                         
@@ -128,9 +136,6 @@
                                     <i class="fas fa-user"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">
-                                        <i class="fas fa-user me-2"></i>My Dashboard
-                                    </a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('index') }}">
                                         <i class="fas fa-home me-2"></i>View Website
                                     </a></li>

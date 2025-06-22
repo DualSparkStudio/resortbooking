@@ -1,7 +1,9 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+import secrets
+import hashlib
 from app import db
 
 class User(UserMixin, db.Model):
@@ -28,6 +30,57 @@ class User(UserMixin, db.Model):
     
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
+    
+    def generate_password_reset_token(self):
+        """Generate a secure password reset token"""
+        # Generate a random token
+        token = secrets.token_urlsafe(32)
+        
+        # Create a timestamp (rounded to minute for consistency)
+        timestamp = int(datetime.utcnow().timestamp())
+        
+        # Create token data and hash
+        token_data = f"{token}:{timestamp}:{self.id}"
+        token_hash = hashlib.sha256(token_data.encode()).hexdigest()
+        
+        # Return token in format: token|hash|timestamp (using | to avoid : conflicts)
+        return f"{token}|{token_hash}|{timestamp}"
+    
+    def verify_password_reset_token(self, token_string, expiry_hours=1):
+        """Verify a password reset token and check if it's still valid"""
+        try:
+            # Split the token using | separator
+            parts = token_string.split('|')
+            if len(parts) != 3:
+                return False
+            
+            token, token_hash, timestamp_str = parts
+            timestamp = int(timestamp_str)
+            
+            # Check if token is expired
+            current_time = int(datetime.utcnow().timestamp())
+            if current_time - timestamp > expiry_hours * 3600:  # 3600 seconds = 1 hour
+                return False
+            
+            # Verify the hash (note: token_data uses : separator for hashing)
+            token_data = f"{token}:{timestamp}:{self.id}"
+            expected_hash = hashlib.sha256(token_data.encode()).hexdigest()
+            
+            return token_hash == expected_hash
+            
+        except Exception:
+            return False
+    
+    @staticmethod
+    def get_user_by_reset_token(token_string):
+        """Get user by reset token without exposing user ID in token"""
+        # This is a simple implementation - in production you might want to store tokens in database
+        # For now, we'll try to match against all users (not ideal for large user bases)
+        users = User.query.all()
+        for user in users:
+            if user.verify_password_reset_token(token_string):
+                return user
+        return None
     
     def __repr__(self):
         return f'<User {self.username}>'

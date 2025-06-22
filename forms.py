@@ -121,3 +121,37 @@ class GuestDetailsForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
     phone = StringField('Phone Number', validators=[DataRequired(), Length(max=20)])
     special_requests = TextAreaField('Special Requests')
+
+class AdminProfileForm(FlaskForm):
+    first_name = StringField('First Name', validators=[DataRequired(), Length(max=50)])
+    last_name = StringField('Last Name', validators=[DataRequired(), Length(max=50)])
+    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
+    phone = StringField('Phone Number', validators=[Optional(), Length(max=20)])
+    
+    def __init__(self, current_user_id, *args, **kwargs):
+        super(AdminProfileForm, self).__init__(*args, **kwargs)
+        self.current_user_id = current_user_id
+    
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user and user.id != self.current_user_id:
+            raise ValidationError('Email already in use by another account.')
+
+class AdminPasswordForm(FlaskForm):
+    current_password = PasswordField('Current Password', validators=[DataRequired()])
+    new_password = PasswordField('New Password', validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField('Confirm New Password', 
+                                   validators=[DataRequired(), EqualTo('new_password', message='Passwords must match')])
+
+class ForgotPasswordForm(FlaskForm):
+    email = StringField('Email Address', validators=[DataRequired(), Email()])
+    
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if not user:
+            raise ValidationError('No account found with that email address.')
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('New Password', validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField('Confirm New Password', 
+                                   validators=[DataRequired(), EqualTo('password', message='Passwords must match')])

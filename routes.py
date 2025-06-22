@@ -7,8 +7,9 @@ from sqlalchemy import func, and_, or_
 from sqlalchemy.orm import joinedload
 from app import app, db, login_manager
 from models import User, RoomType, Room, Booking, Facility, Testimonial, ContactMessage, ResortClosure, CalendarSettings, RoomTypeImage
-from forms import LoginForm, RegistrationForm, BookingForm, ContactForm, RoomTypeForm, RoomForm, FacilityForm, TestimonialForm, ResortClosureForm, CalendarSettingsForm, GuestDetailsForm
-from utils import check_room_availability, calculate_booking_total, create_stripe_checkout_session, create_razorpay_order, verify_razorpay_payment, send_booking_confirmation_email, send_contact_notification_email
+from forms import LoginForm, RegistrationForm, BookingForm, ContactForm, RoomTypeForm, RoomForm, FacilityForm, TestimonialForm, ResortClosureForm, CalendarSettingsForm, GuestDetailsForm, AdminProfileForm, AdminPasswordForm, ForgotPasswordForm, ResetPasswordForm
+from utils import check_room_availability, calculate_booking_total, create_stripe_checkout_session, create_razorpay_order, verify_razorpay_payment, send_booking_confirmation_email, send_contact_notification_email, send_password_reset_email
+from admin_email_config import EmailConfig
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -124,9 +125,74 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user:
+            # Generate reset token
+            token = user.generate_password_reset_token()
+            
+            # Get mail settings from environment variables
+            mail_settings = {
+                'MAIL_SERVER': os.environ.get('MAIL_SERVER'),
+                'MAIL_PORT': int(os.environ.get('MAIL_PORT', 587)),
+                'MAIL_USE_TLS': os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1'],
+                'MAIL_USERNAME': os.environ.get('MAIL_USERNAME'),
+                'MAIL_PASSWORD': os.environ.get('MAIL_PASSWORD'),
+                'MAIL_DEFAULT_SENDER': os.environ.get('MAIL_DEFAULT_SENDER')
+            }
+            
+            # Send password reset email
+            if send_password_reset_email(user, token, mail_settings):
+                flash('A password reset link has been sent to your email address.', 'info')
+            else:
+                # Log the token for testing when email is not configured
+                app.logger.warning(f"Password reset requested for {user.email}")
+                app.logger.warning(f"Reset token (for testing): {token}")
+                app.logger.warning(f"Reset URL: {request.url_root}reset-password/{token}")
+                flash('Email configuration not available. Please contact admin or check server logs for reset link.', 'warning')
+        else:
+            # Don't reveal that the email doesn't exist for security
+            flash('A password reset link has been sent to your email address.', 'info')
+        
+        return redirect(url_for('login'))
+    
+    return render_template('forgot_password.html', form=form)
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    # Verify token and get user
+    user = User.get_user_by_reset_token(token)
+    if not user:
+        flash('Invalid or expired password reset link.', 'danger')
+        return redirect(url_for('forgot_password'))
+    
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        # Update user password
+        user.set_password(form.password.data)
+        db.session.commit()
+        
+        flash('Your password has been reset successfully. You can now log in.', 'success')
+        return redirect(url_for('login'))
+    
+    return render_template('reset_password.html', form=form, token=token)
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    # Redirect admin users to admin dashboard
+    if current_user.is_admin:
+        return redirect(url_for('admin_dashboard'))
+    
     bookings = Booking.query.filter_by(user_id=current_user.id).order_by(Booking.created_at.desc()).all()
     return render_template('dashboard.html', bookings=bookings)
 
@@ -1447,6 +1513,46 @@ def admin_delete_resort_closure(id):
     flash('Resort closure deleted successfully!', 'success')
     return redirect(url_for('admin_resort_closures'))
 
+@app.route('/admin/profile', methods=['GET', 'POST'])
+@login_required
+def admin_profile():
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('index'))
+    
+    profile_form = AdminProfileForm(current_user.id)
+    password_form = AdminPasswordForm()
+    
+    # Handle profile update
+    if profile_form.validate_on_submit() and request.form.get('form_type') == 'profile':
+        current_user.first_name = profile_form.first_name.data
+        current_user.last_name = profile_form.last_name.data
+        current_user.email = profile_form.email.data
+        current_user.phone = profile_form.phone.data
+        
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('admin_profile'))
+    
+    # Handle password change
+    if password_form.validate_on_submit() and request.form.get('form_type') == 'password':
+        if current_user.check_password(password_form.current_password.data):
+            current_user.set_password(password_form.new_password.data)
+            db.session.commit()
+            flash('Password changed successfully!', 'success')
+            return redirect(url_for('admin_profile'))
+        else:
+            flash('Current password is incorrect.', 'danger')
+    
+    # Pre-populate profile form with current data
+    if request.method == 'GET':
+        profile_form.first_name.data = current_user.first_name
+        profile_form.last_name.data = current_user.last_name
+        profile_form.email.data = current_user.email
+        profile_form.phone.data = current_user.phone
+    
+    return render_template('admin/profile.html', profile_form=profile_form, password_form=password_form)
+
 @app.route('/room-calendar/<int:room_type_id>')
 def room_calendar(room_type_id):
     room_type = RoomType.query.get_or_404(room_type_id)
@@ -1717,6 +1823,80 @@ def get_status_color(status):
     return colors.get(status, '#6c757d')
 
 # Error handlers
+@app.route('/admin/email-config', methods=['GET', 'POST'])
+@login_required
+def admin_email_config():
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'test_connection':
+            # Test email connection
+            smtp_server = request.form.get('smtp_server')
+            smtp_port = int(request.form.get('smtp_port', 587))
+            use_tls = 'use_tls' in request.form
+            username = request.form.get('username')
+            password = request.form.get('password')
+            
+            success, message = EmailConfig.test_email_connection(
+                smtp_server, smtp_port, use_tls, username, password
+            )
+            
+            if success:
+                flash(f'✅ {message}', 'success')
+            else:
+                flash(f'❌ {message}', 'danger')
+        
+        elif action == 'send_test_email':
+            # Send test email
+            smtp_server = request.form.get('smtp_server')
+            smtp_port = int(request.form.get('smtp_port', 587))
+            use_tls = 'use_tls' in request.form
+            username = request.form.get('username')
+            password = request.form.get('password')
+            sender_email = request.form.get('sender_email')
+            test_recipient = request.form.get('test_recipient')
+            
+            success, message = EmailConfig.send_test_email(
+                smtp_server, smtp_port, use_tls, username, password, sender_email, test_recipient
+            )
+            
+            if success:
+                flash(f'✅ {message}', 'success')
+            else:
+                flash(f'❌ {message}', 'danger')
+        
+        elif action == 'save_config':
+            # Save email configuration
+            smtp_server = request.form.get('smtp_server')
+            smtp_port = int(request.form.get('smtp_port', 587))
+            use_tls = 'use_tls' in request.form
+            username = request.form.get('username')
+            password = request.form.get('password')
+            sender_email = request.form.get('sender_email')
+            
+            success, message = EmailConfig.save_email_config(
+                smtp_server, smtp_port, use_tls, username, password, sender_email
+            )
+            
+            if success:
+                flash(f'✅ {message}', 'success')
+            else:
+                flash(f'❌ {message}', 'danger')
+    
+    # Get current configuration and providers
+    current_config = EmailConfig.get_current_config()
+    email_providers = EmailConfig.get_email_providers()
+    email_status = EmailConfig.get_email_status()
+    
+    return render_template('admin/email_config.html', 
+                         config=current_config, 
+                         providers=email_providers,
+                         status=email_status)
+
 @app.errorhandler(404)
 def not_found_error(error):
     return render_template('404.html'), 404

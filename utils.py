@@ -321,6 +321,79 @@ def send_contact_notification_email(contact_message, admin_email, mail_settings)
         current_app.logger.error(f"Error sending contact notification email: {str(e)}")
         return False
 
+def send_password_reset_email(user, token, mail_settings):
+    """Send password reset email to user"""
+    try:
+        # Check if mail settings are configured
+        if not all([mail_settings.get('MAIL_SERVER'), mail_settings.get('MAIL_USERNAME'), 
+                   mail_settings.get('MAIL_PASSWORD'), mail_settings.get('MAIL_DEFAULT_SENDER')]):
+            current_app.logger.warning("Mail settings not fully configured, skipping password reset email")
+            return False
+        
+        # Configure mail settings for this send operation
+        current_app.config.update(
+            MAIL_SERVER=mail_settings['MAIL_SERVER'],
+            MAIL_PORT=mail_settings['MAIL_PORT'],
+            MAIL_USE_TLS=mail_settings['MAIL_USE_TLS'],
+            MAIL_USERNAME=mail_settings['MAIL_USERNAME'],
+            MAIL_PASSWORD=mail_settings['MAIL_PASSWORD'],
+            MAIL_DEFAULT_SENDER=mail_settings['MAIL_DEFAULT_SENDER']
+        )
+        mail.init_app(current_app)
+        
+        # Get the application domain
+        domain = get_app_domain()
+        
+        # Create password reset URL
+        reset_url = f"{domain}/reset-password/{token}"
+        
+        # Create the message
+        msg = Message(
+            subject='Password Reset Request - Luxury Resort',
+            recipients=[user.email],
+            html=f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #c1502e;">Password Reset Request</h2>
+                <p>Hello {user.get_full_name()},</p>
+                
+                <p>You have requested to reset your password for your Luxury Resort account.</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{reset_url}" 
+                       style="background-color: #c1502e; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                        Reset My Password
+                    </a>
+                </div>
+                
+                <p><strong>Important:</strong> This link will expire in 1 hour for security reasons.</p>
+                
+                <p>If you did not request this password reset, please ignore this email and your password will remain unchanged.</p>
+                
+                <p>For security reasons, please do not share this link with anyone.</p>
+                
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+                
+                <p style="color: #666; font-size: 12px;">
+                    If you're having trouble clicking the button, copy and paste the following URL into your web browser:<br>
+                    <a href="{reset_url}" style="color: #c1502e;">{reset_url}</a>
+                </p>
+                
+                <p style="color: #666; font-size: 12px;">
+                    Best regards,<br>
+                    Luxury Resort Team
+                </p>
+            </div>
+            """
+        )
+        
+        mail.send(msg)
+        current_app.logger.info(f"Password reset email sent to {user.email}")
+        return True
+        
+    except Exception as e:
+        current_app.logger.error(f"Failed to send password reset email: {str(e)}")
+        return False
+
 def format_currency(amount):
     """Format amount as currency"""
     return f"${amount:,.2f}"

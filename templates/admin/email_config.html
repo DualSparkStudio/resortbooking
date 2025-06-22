@@ -1,0 +1,262 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Email Configuration - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-envelope me-2"></i>Email Configuration</h2>
+                <div class="badge badge-{{ status.color }} fs-6">
+                    <i class="fas fa-circle me-1"></i>{{ status.message }}
+                </div>
+            </div>
+
+            <!-- Email Status Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Email System Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-{{ status.color }} mb-0">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-{% if status.status == 'working' %}check-circle{% elif status.status == 'error' %}exclamation-triangle{% else %}warning{% endif %} me-2"></i>
+                            <strong>{{ status.message }}</strong>
+                        </div>
+                        {% if status.status == 'not_configured' %}
+                        <hr>
+                        <p class="mb-0">Configure email settings below to enable:</p>
+                        <ul class="mb-0 mt-2">
+                            <li>Password reset emails</li>
+                            <li>Booking confirmations</li>
+                            <li>Contact form notifications</li>
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Configuration Form -->
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="emailConfigTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="quick-setup-tab" data-bs-toggle="tab" data-bs-target="#quick-setup" type="button" role="tab">
+                                <i class="fas fa-magic me-2"></i>Quick Setup
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="custom-setup-tab" data-bs-toggle="tab" data-bs-target="#custom-setup" type="button" role="tab">
+                                <i class="fas fa-cogs me-2"></i>Custom Setup
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="emailConfigTabsContent">
+                        <!-- Quick Setup Tab -->
+                        <div class="tab-pane fade show active" id="quick-setup" role="tabpanel">
+                            <h5 class="mb-3">Choose Your Email Provider</h5>
+                            <div class="row">
+                                {% for provider_key, provider in providers.items() %}
+                                {% if provider_key != 'custom' %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100 provider-card" data-provider="{{ provider_key }}">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-envelope fa-3x mb-3 text-primary"></i>
+                                            <h6>{{ provider.name }}</h6>
+                                            <p class="text-muted small">{{ provider.instructions }}</p>
+                                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="selectProvider('{{ provider_key }}')">
+                                                Select {{ provider.name }}
+                                            </button>
+                                            {% if provider.help_url %}
+                                            <div class="mt-2">
+                                                <a href="{{ provider.help_url }}" target="_blank" class="text-muted small">
+                                                    <i class="fas fa-external-link-alt me-1"></i>Setup Help
+                                                </a>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Custom Setup Tab -->
+                        <div class="tab-pane fade" id="custom-setup" role="tabpanel">
+                            <h5 class="mb-3">Custom SMTP Configuration</h5>
+                            <p class="text-muted">Configure your own SMTP server settings</p>
+                            <button type="button" class="btn btn-outline-secondary" onclick="selectProvider('custom')">
+                                <i class="fas fa-cogs me-2"></i>Configure Custom SMTP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuration Form (Hidden by default) -->
+            <div class="card mt-4" id="configForm" style="display: none;">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-wrench me-2"></i>Email Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="emailConfigForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="smtp_server" class="form-label">SMTP Server</label>
+                                    <input type="text" class="form-control" id="smtp_server" name="smtp_server" 
+                                           value="{{ config.smtp_server }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="smtp_port" class="form-label">Port</label>
+                                    <input type="number" class="form-control" id="smtp_port" name="smtp_port" 
+                                           value="{{ config.smtp_port }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Security</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="use_tls" name="use_tls" 
+                                               {% if config.use_tls %}checked{% endif %}>
+                                        <label class="form-check-label" for="use_tls">Use TLS</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Email Username</label>
+                                    <input type="email" class="form-control" id="username" name="username" 
+                                           value="{{ config.username }}" required>
+                                    <div class="form-text">Your email address</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                    <div class="form-text">Your email password or app password</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="sender_email" class="form-label">Sender Email</label>
+                            <input type="email" class="form-control" id="sender_email" name="sender_email" 
+                                   value="{{ config.sender_email }}" required>
+                            <div class="form-text">Email address that will appear as sender</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="test_recipient" class="form-label">Test Email Recipient</label>
+                            <input type="email" class="form-control" id="test_recipient" name="test_recipient" 
+                                   value="{{ current_user.email }}">
+                            <div class="form-text">Send test email to this address</div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" name="action" value="test_connection" class="btn btn-outline-primary">
+                                <i class="fas fa-plug me-2"></i>Test Connection
+                            </button>
+                            <button type="submit" name="action" value="send_test_email" class="btn btn-outline-info">
+                                <i class="fas fa-paper-plane me-2"></i>Send Test Email
+                            </button>
+                            <button type="submit" name="action" value="save_config" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i>Save Configuration
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Need Help?</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-shield-alt me-2 text-success"></i>Security</h6>
+                            <p class="small text-muted">Use app passwords for Gmail and Yahoo. Never share your main email password.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-cogs me-2 text-info"></i>Configuration</h6>
+                            <p class="small text-muted">Test your connection before saving. Most email providers use port 587 with TLS.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-bug me-2 text-warning"></i>Troubleshooting</h6>
+                            <p class="small text-muted">If emails don't work, check spam folders and verify your email provider allows SMTP access.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const providers = {{ providers | tojsonfilter }};
+
+function selectProvider(providerKey) {
+    const provider = providers[providerKey];
+    
+    // Show the configuration form
+    document.getElementById('configForm').style.display = 'block';
+    
+    // Fill in provider-specific settings
+    if (providerKey !== 'custom') {
+        document.getElementById('smtp_server').value = provider.smtp_server;
+        document.getElementById('smtp_port').value = provider.smtp_port;
+        document.getElementById('use_tls').checked = provider.use_tls;
+    }
+    
+    // Scroll to form
+    document.getElementById('configForm').scrollIntoView({ behavior: 'smooth' });
+    
+    // Focus on username field
+    setTimeout(() => {
+        document.getElementById('username').focus();
+    }, 500);
+}
+
+// Auto-fill sender email when username changes
+document.getElementById('username').addEventListener('input', function() {
+    const senderField = document.getElementById('sender_email');
+    if (!senderField.value) {
+        senderField.value = this.value;
+    }
+});
+
+// Form submission with loading states
+document.getElementById('emailConfigForm').addEventListener('submit', function(e) {
+    const submitButton = e.submitter;
+    const originalText = submitButton.innerHTML;
+    
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    submitButton.disabled = true;
+    
+    // Re-enable after 5 seconds as fallback
+    setTimeout(() => {
+        submitButton.innerHTML = originalText;
+        submitButton.disabled = false;
+    }, 5000);
+});
+
+// Show form if already configured
+{% if config.is_configured %}
+document.getElementById('configForm').style.display = 'block';
+{% endif %}
+</script>
+{% endblock %} 
