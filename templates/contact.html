@@ -163,7 +163,7 @@
                             <a href="{{ url_for('facilities') }}" class="btn btn-outline-primary">
                                 <i class="fas fa-spa me-2"></i>Our Facilities
                             </a>
-                            {% if current_user.is_authenticated %}
+                            {% if current_user.is_authenticated and current_user.is_admin %}
                             <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
                                 <i class="fas fa-user me-2"></i>My Bookings
                             </a>

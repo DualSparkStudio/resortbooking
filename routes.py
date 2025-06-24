@@ -121,6 +121,11 @@ def register():
 @app.route('/logout')
 @login_required
 def logout():
+    # Only allow admin users to logout through this route
+    if not current_user.is_admin:
+        flash('Access denied. Logout is only available for administrators.', 'warning')
+        return redirect(url_for('index'))
+    
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
@@ -189,12 +194,13 @@ def reset_password(token):
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # Redirect admin users to admin dashboard
-    if current_user.is_admin:
-        return redirect(url_for('admin_dashboard'))
+    # Only allow admin users to access dashboard
+    if not current_user.is_admin:
+        flash('Access denied. Dashboard is only available for administrators.', 'warning')
+        return redirect(url_for('index'))
     
-    bookings = Booking.query.filter_by(user_id=current_user.id).order_by(Booking.created_at.desc()).all()
-    return render_template('dashboard.html', bookings=bookings)
+    # Redirect admin users to admin dashboard
+    return redirect(url_for('admin_dashboard'))
 
 @app.route('/book/<int:room_type_id>', methods=['GET', 'POST'])
 def book_room(room_type_id):

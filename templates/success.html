@@ -59,7 +59,7 @@
                             <a href="{{ url_for('index') }}" class="btn btn-luxury btn-lg px-4">
                                 <i class="fas fa-home me-2"></i>Return Home
                             </a>
-                            {% if current_user.is_authenticated %}
+                            {% if current_user.is_authenticated and current_user.is_admin %}
                                 <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary btn-lg px-4">
                                     <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                                 </a>

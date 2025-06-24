@@ -172,7 +172,7 @@
                 <!-- Action Buttons -->
                 <div class="text-center mt-4">
                     <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-                        {% if booking.user and current_user.is_authenticated %}
+                        {% if booking.user and current_user.is_authenticated and current_user.is_admin %}
                         <a href="{{ url_for('dashboard') }}" class="btn btn-luxury btn-lg px-4">
                             <i class="fas fa-tachometer-alt me-2"></i>View Dashboard
                         </a>
