@@ -1,7 +1,7 @@
 [build]
   base = ""
-  publish = "dist"  # change this if needed, e.g. to "build" for React
-  command = "npm run build"
+  publish = "_site"  # change this if needed, e.g. to "build" for React
+  command = "bundle exec jekyll build"
 
   [build.environment]
     NODE_VERSION = "18"
