@@ -3,6 +3,9 @@
   publish = "_site"  # change this if needed, e.g. to "build" for React
   command = "bundle exec jekyll build"
 
+  [[plugins]]
+  package = "netlify-plugin-edge-functions-build-fix"
+
   [build.environment]
     NODE_VERSION = "18"
     PYTHON_VERSION = "3.10.12"
