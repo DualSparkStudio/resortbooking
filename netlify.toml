@@ -1,14 +1,12 @@
 [build]
   base = ""
-  publish = "dist"  # change this to your build folder (e.g., "build" or "public" or "dist")
+  publish = "dist"  # change this if needed, e.g. to "build" for React
   command = "npm run build"
 
-[build.environment]
-  NODE_VERSION = "18"
-  PYTHON_VERSION = "3.10.12"
+  [build.environment]
+    NODE_VERSION = "18"
+    PYTHON_VERSION = "3.10.12"
+    NETLIFY_USE_NOBLE = "false"
 
 [functions]
   node_bundler = "esbuild"
-
-[build]
-  environment = { NETLIFY_USE_NOBLE = "false" }
