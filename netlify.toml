@@ -1,0 +1,14 @@
+[build]
+  base = ""
+  publish = "dist"  # change this to your build folder (e.g., "build" or "public" or "dist")
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+  PYTHON_VERSION = "3.10.12"
+
+[functions]
+  node_bundler = "esbuild"
+
+[build]
+  environment = { NETLIFY_USE_NOBLE = "false" }
